@@ -38,7 +38,10 @@ class RandomBot:
 
 
     def update(self, answer):
-        self.state.updateGraph(self.history[-1], answer)
+        # dummy bot that doesn't rely on the state.
+        # self.state.updateGraph Is the basic approach of updating the state.
+        # Any other approaches, can be appended here in this method.
+        pass
 
 
 
