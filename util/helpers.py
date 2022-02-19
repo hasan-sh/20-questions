@@ -1,11 +1,20 @@
-
+import os
 import rdflib
+from pathlib import Path
+import random
 
-
-def readGraph(file, mode='ttl'):
+def readGraph(fileName, mode='nt'):
     g = rdflib.Graph()
-    g.parse(file, format=mode)
+    parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    targetFile = 'datasets/{}'.format(fileName)
+    g.parse(os.path.join(parent, targetFile), format=mode)
     return g
+
+def parseTriple(triple):
+    s = triple[0].split('/')[-1]
+    p = triple[1].split('/')[-1].split('#')[-1]
+    o = triple[2].split('/')[-1]
+    return (s, p, o)
 
 def parseGraph(g):
     parsedGraph = []
