@@ -1,1 +1,2 @@
 POSSIBLE_ANSWERS = ['yes', 'no']
+QUESTIONS_LIMIT = 20

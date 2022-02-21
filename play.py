@@ -3,6 +3,7 @@ from engine import state
 from game import Game
 from util import helpers
 from argparse import ArgumentParser
+import time
 
 
 def initializeGame(fileName='wikitop2021_small.nt'):
@@ -49,9 +50,13 @@ players = options.players
 fileName = options.fileName
 
 print('Initializing the game..')
-graph = initializeGame()
+t = time.process_time()
+graph = initializeGame(fileName)
+elapsed_t = time.process_time() - t
+if dev:
+    print('It took {}'.format(elapsed_t))
 for i in range(numGame):
 
     print('Running the game..')
-    game = Game(graph, players) # TODO: pass players through the CL
+    game = Game(graph, players=players) # TODO: pass players through the CL
     game.run()
