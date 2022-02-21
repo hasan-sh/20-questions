@@ -1,7 +1,7 @@
 
 
 from engine.state.main import State
-import util.helpers as helpers
+from util import helpers, constants
 from bots.Random.bot import RandomBot
 
 class Game:
@@ -9,6 +9,7 @@ class Game:
     def __init__(self, graph, players=[]): # TODO: load players dynamically.
         self.graph = graph
         self.state = State(self.graph)
+        # Players: [Questioner, Answerer]
         self.questioner = RandomBot(self.state)
         self.answerer = 'user'
 
@@ -16,10 +17,16 @@ class Game:
         while self.nQuestions > 0:
             question = self.questioner.nextQuestion()
             # answer = input('Is it {}'.format(question))
-            answer = input(question + '? (yes or no) ')
-            self.questioner.update(answer)
-            # self.state.updateGraph(self.questioner.history[-1], answer)
-            self.nQuestions -= 1
+            def askUser():
+                answer = input(question + '? (yes or no) ')
+                if answer in constants.POSSIBLE_ANSWERS:
+                    self.questioner.update(answer)
+                    # self.state.updateGraph(self.questioner.history[-1], answer)
+                    self.nQuestions -= 1
+                else:
+                    input('Please either of {}'.format(constants.POSSIBLE_ANSWERS))
+                    askUser()
+            askUser()
 
 
 
