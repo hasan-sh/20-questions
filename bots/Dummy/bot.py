@@ -5,7 +5,7 @@ from util import helpers
 TODO: Document
 - 
 """
-class RandomBot:
+class DummyBot:
     _name = 'Random Bot'
 
     def __init__(self, state, depth=20):
