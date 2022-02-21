@@ -5,26 +5,25 @@ from util import helpers, constants
 from bots.Random.bot import RandomBot
 
 class Game:
-    nQuestions = 20
-    def __init__(self, graph, players=[]): # TODO: load players dynamically.
+    def __init__(self, graph, nQuestions=constants.QUESTIONS_LIMIT, players=[]): # TODO: load players dynamically.
         self.graph = graph
+        self.nQuestions = nQuestions
         self.state = State(self.graph)
         # Players: [Questioner, Answerer]
         self.questioner = RandomBot(self.state)
-        self.answerer = 'user'
+        self.answerer = 'user' # TODO: update this to be dynamic.
 
     def run(self):
-        while self.nQuestions > 0:
+        while self.state.questionsAsked < self.nQuestions:
             question = self.questioner.nextQuestion()
             # answer = input('Is it {}'.format(question))
             def askUser():
                 answer = input(question + '? (yes or no) ')
                 if answer in constants.POSSIBLE_ANSWERS:
                     self.questioner.update(answer)
-                    # self.state.updateGraph(self.questioner.history[-1], answer)
-                    self.nQuestions -= 1
+                    self.state.update()
                 else:
-                    input('Please either of {}'.format(constants.POSSIBLE_ANSWERS))
+                    print('Please either of {}'.format(constants.POSSIBLE_ANSWERS))
                     askUser()
             askUser()
 
