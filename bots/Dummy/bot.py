@@ -6,7 +6,7 @@ TODO: Document
 - 
 """
 class DummyBot:
-    _name = 'Random Bot'
+    _name = 'Dummy Bot'
 
     def __init__(self, state, depth=20):
         self.state = state
@@ -21,13 +21,6 @@ class DummyBot:
         triple = helpers.parseTriple(triple)
         (_, p, o) = triple
         return p + ' ' + o
-        # r = random.random()
-        # if r <= 0.33:
-        #     return p
-        # elif r > 0.33 and r <= 0.66:
-        #     return p + ' ' + o
-        # else:
-        #     return o
 
     # TODO: what happens if g is empty?
     def getQuestions(self):
@@ -35,6 +28,7 @@ class DummyBot:
         g = list(self.state.graph[::])
         # select possible properties
         return g
+
 
 
     def update(self, answer):

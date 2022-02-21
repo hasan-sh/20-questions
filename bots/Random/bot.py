@@ -20,14 +20,14 @@ class RandomBot:
         self.history.append(triple)
         triple = helpers.parseTriple(triple)
         (_, p, o) = triple
+        r = random.random()
         return p + ' ' + o
-        # r = random.random()
-        # if r <= 0.33:
-        #     return p
-        # elif r > 0.33 and r <= 0.66:
-        #     return p + ' ' + o
-        # else:
-        #     return o
+        if r <= 0.33:
+            return p
+        elif r > 0.33 and r <= 0.66:
+            return p + ' ' + o
+        else:
+            return o
 
     # TODO: what happens if g is empty?
     def getQuestions(self):
