@@ -4,7 +4,10 @@ Created on Tue Feb 16 16:38:55 2022
 @author: hasan-sh
 """
 import rdflib
+"""
+TODO: Document
 
+"""
 class State:
     def __init__(self, graph, depth=0):
         self.graph = graph
@@ -34,8 +37,8 @@ class State:
             self.createSubGraph(question)
         s, p, o = question
         # print('REMOVE: ', s,p,o)
-        # self.graph.remove((None, p, o))
-        self.graph.remove((None, p, None))
+        self.graph.remove((None, p, o))
+        # self.graph.remove((None, p, None))
 
     def createSubGraph(self, question):
         """

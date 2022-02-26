@@ -1,9 +1,11 @@
 import random
-from util import helpers
+from util import helpers, constants
 
 """
-TODO: Document
-- 
+Dummy bot that does not rely on the state. This bot asks random questions from the KG.
+The answer (whether yes or no) is not incorporated at all in the next question nor removed from the KG.
+It is however saved in the history of asked questions.
+
 """
 class DummyBot:
     _name = 'Dummy Bot'
@@ -16,13 +18,14 @@ class DummyBot:
 
     def nextQuestion(self):
         questions = self.getQuestions()
+        if not questions:
+            return constants.EMPTY_KG
         triple = random.choice(questions)
         self.history.append(triple)
         triple = helpers.parseTriple(triple)
         (_, p, o) = triple
         return p + ' ' + o
 
-    # TODO: what happens if g is empty?
     def getQuestions(self):
         # all entities in state
         g = list(self.state.graph[::])

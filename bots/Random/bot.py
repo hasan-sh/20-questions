@@ -1,9 +1,15 @@
 import random
-from util import helpers
+from util import helpers, constants
 
 """
-TODO: Document
-- 
+Random bot: This bot asks random questions from the KG. 
+If answer is yes:
+    1- A sparql query is constructed from the triple used to ask the question. All instances where the subject appears either as
+       subject or object (in the previous KG) are retrieved (through a UNION) and a new sub-KG is constructed from them.
+    2- the triple itself is removed along with all triples where the predicate and object matches. 
+If answer is no:
+    1- the triple itself is removed along with all triples where the predicate and object matches. 
+In addition all questions' triples are saved to history.
 """
 class RandomBot:
     _name = 'Random Bot'
@@ -16,6 +22,8 @@ class RandomBot:
 
     def nextQuestion(self):
         questions = self.getQuestions()
+        if not questions:
+            return constants.EMPTY_KG
         triple = random.choice(questions)
         self.history.append(triple)
         triple = helpers.parseTriple(triple)
