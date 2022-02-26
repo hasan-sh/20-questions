@@ -20,10 +20,13 @@ class Game:
     def run(self):
         while self.state.questionsAsked < self.nQuestions:
             question = self.questioner.nextQuestion()
-            if question == constants.EMPTY_KG:
-                self.state.questionsAsked = self.nQuestions + 1
-                input(question)
+            if self.state.foundAnswer:
+                _, _, o = helpers.parseTriple(self.state.foundAnswer)
+                print("It is "+ o)
                 break
+            if not question:
+                input(constants.EMPTY_KG)
+                break # TODO: don't break but change the logic based on user's input!
             # answer = input('Is it {}'.format(question))
             def askUser():
                 answer = input(question + '? (yes or no) ')

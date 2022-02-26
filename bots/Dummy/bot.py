@@ -10,7 +10,7 @@ It is however saved in the history of asked questions.
 class DummyBot:
     _name = 'Dummy Bot'
 
-    def __init__(self, state, depth=20):
+    def __init__(self, state, questioner=True, depth=20):
         self.state = state
         self.depth = depth
         self.history = []
@@ -19,7 +19,7 @@ class DummyBot:
     def nextQuestion(self):
         questions = self.getQuestions()
         if not questions:
-            return constants.EMPTY_KG
+            return False
         triple = random.choice(questions)
         self.history.append(triple)
         triple = helpers.parseTriple(triple)

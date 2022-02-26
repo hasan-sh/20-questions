@@ -23,7 +23,9 @@ class RandomBot:
     def nextQuestion(self):
         questions = self.getQuestions()
         if not questions:
-            return constants.EMPTY_KG
+            return False
+        # if len(questions) == 1:
+            
         triple = random.choice(questions)
         self.history.append(triple)
         triple = helpers.parseTriple(triple)
