@@ -14,3 +14,6 @@
 <http://yago-knowledge.org/resource/Tobey_Maguire> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://yago-knowledge.org/resource/Human> .
 <http://yago-knowledge.org/resource/Serena_Williams> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://yago-knowledge.org/resource/Human> .
 <http://yago-knowledge.org/resource/Manchester_City_F.C.> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/NGO> .
+<http://yago-knowledge.org/resource/Hisham> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://yago-knowledge.org/resource/DemiGod> .
+<http://yago-knowledge.org/resource/Hasan> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://yago-knowledge.org/resource/Human> .
+<http://yago-knowledge.org/resource/Hasan> <http://www.w3.org/1999/02/22-rdf-syntax-ns#hasRole> <http://yago-knowledge.org/resource/Player> .

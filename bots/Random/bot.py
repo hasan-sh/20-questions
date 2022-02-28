@@ -1,7 +1,9 @@
 import random
 from util import helpers, constants
 
-"""
+
+class RandomBot:
+    """
 Random bot: This bot asks random questions from the KG. 
 If answer is yes:
     1- A sparql query is constructed from the triple used to ask the question. All instances where the subject appears either as
@@ -9,12 +11,14 @@ If answer is yes:
     2- the triple itself is removed along with all triples where the predicate and object matches. 
 If answer is no:
     1- the triple itself is removed along with all triples where the predicate and object matches. 
-In addition all questions' triples are saved to history.
+In addition all questions' triples are saved to history.s
 """
-class RandomBot:
     _name = 'Random Bot'
 
     def __init__(self, state, depth=20):
+        """
+        :param int depth: bllalaib
+        """
         self.state = state
         self.depth = depth
         self.history = []
@@ -28,16 +32,7 @@ class RandomBot:
             
         triple = random.choice(questions)
         self.history.append(triple)
-        triple = helpers.parseTriple(triple)
-        (_, p, o) = triple
-        r = random.random()
-        return p + ' ' + o
-        if r <= 0.33:
-            return p
-        elif r > 0.33 and r <= 0.66:
-            return p + ' ' + o
-        else:
-            return o
+        return triple
 
     # TODO: what happens if g is empty?
     def getQuestions(self):
