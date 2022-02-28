@@ -22,9 +22,7 @@ class DummyBot:
             return False
         triple = random.choice(questions)
         self.history.append(triple)
-        triple = helpers.parseTriple(triple)
-        (_, p, o) = triple
-        return p + ' ' + o
+        return triple
 
     def getQuestions(self):
         # all entities in state

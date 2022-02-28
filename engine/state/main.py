@@ -45,6 +45,16 @@ class State:
             self.createSubGraph(question)
         _, p, o = question
         self.graph.remove((None, p, o))
+        # if len(self.graph[:]) < 1: TODO
+        #     # reassign graph to the previous one in memory
+        #     prevGraph = self.subGraphs[-1]
+        #     subjects = prevGraph.subjects()
+        #     newGraph = rdflib.Graph()
+        #     # p o?
+        #     # o = s, p = is it
+        #     # is it s?
+
+
         # self.graph.remove((None, p, None))
 
 
@@ -76,7 +86,7 @@ class State:
         }
         """%(p, o)
 
-        print(question, query)
+        # print(question, query)
         qres = self.graph.query(query)
         subGraph = rdflib.Graph()
         for t in qres:
@@ -87,5 +97,5 @@ class State:
                 _, p2, o2 = t.s, t.p2, t.o2
                 subGraph.add((s, p2, o2))
             # print(f"{t.s} {t.p} {t.o}")
-        # self.subGraphs.append(subGraph)
+        self.subGraphs.append(subGraph)
         self.graph = subGraph

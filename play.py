@@ -23,10 +23,10 @@ def initializeGame(fileName='wikitop2021_small.nt'):
 ## Parse the command line options
 parser = ArgumentParser()
 
-parser.add_argument("-p", "--players",
-                    dest="players",
-                    help="Choose bot to play with. (default: Dummy.)", # TODO: tournament?? so, against bots?!
-                    default=['Dummy'])
+parser.add_argument("-p", "--questioner",
+                    dest="questioner",
+                    help="Choose bot to play with. (default: Random.)", # TODO: tournament?? so, against bots?!
+                    default=None)
 
 parser.add_argument("-d", "--development",
                     dest="dev",
@@ -50,7 +50,7 @@ numGame = options.games
 
 dev = options.dev
 
-players = options.players
+questioner = options.questioner
 
 fileName = options.fileName
 
@@ -63,5 +63,5 @@ if dev:
 for i in range(numGame):
 
     print('Running the game..')
-    game = Game(graph, players=players) # TODO: pass players through the CL
+    game = Game(graph, questioner=questioner) # TODO: pass players through the CL
     game.run()
