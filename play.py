@@ -5,18 +5,23 @@ from util import helpers
 from argparse import ArgumentParser
 import time
 
+"""
+Running this file in the command line will start the game. 
+Some additional arguments are provided for easier execution through the command line.
+Arguments:
+-p => for players TODO
+-d => for development mode TODO
+-n => for number of games TODO
+-f => to choose which dataset to use 
+"""
 
 def initializeGame(fileName='wikitop2021_small.nt'):
     g = helpers.readGraph(fileName, mode='nt')
     # g = helpers.parseGraph(g)
     return g
 
-
-
-
 ## Parse the command line options
 parser = ArgumentParser()
-
 
 parser.add_argument("-p", "--players",
                     dest="players",

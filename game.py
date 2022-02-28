@@ -3,6 +3,10 @@
 from engine.state.main import State
 from util import helpers, constants
 from bots.Random.bot import RandomBot
+"""
+Here the while loop that keeps the game going on is created. 
+The terminal state is when the number of questions asked exceeds the number of allowed questions specificed in util.constants
+"""
 
 class Game:
     def __init__(self, graph, nQuestions=constants.QUESTIONS_LIMIT, players=[]): # TODO: load players dynamically.
@@ -16,6 +20,13 @@ class Game:
     def run(self):
         while self.state.questionsAsked < self.nQuestions:
             question = self.questioner.nextQuestion()
+            if self.state.foundAnswer:
+                _, _, o = helpers.parseTriple(self.state.foundAnswer)
+                print("It is "+ o)
+                break
+            if not question:
+                input(constants.EMPTY_KG)
+                break # TODO: don't break but change the logic based on user's input!
             # answer = input('Is it {}'.format(question))
             def askUser():
                 answer = input(question + '? (yes or no) ')
@@ -26,8 +37,7 @@ class Game:
                     print('Please either of {}'.format(constants.POSSIBLE_ANSWERS))
                     askUser()
             askUser()
-
-
+        
 
 
 

@@ -4,7 +4,6 @@ Created on Tue Feb 16 16:38:55 2022
 @author: hasan-sh
 """
 import rdflib
-from util import helpers, constants
 """
 TODO: Document
 
@@ -17,7 +16,6 @@ class State:
         self.hints = []
         self.tripleHistory = []
         self.questionsAsked = 0
-        self.foundAnswer = ''
 
     # update the state of the game.
     def update(self):
@@ -31,22 +29,36 @@ class State:
         #
         print("You said {}".format(answer))
         answer = answer.lower()
+        s, p, o = question
         if answer == 'yes':
             # update graph. Save the prop/obj into a list
             # triples = self.graph.triples(question)
-            _, p, _ = helpers.parseTriple(question)
-            if p == 'label':
-                # found it! 
-                self.foundAnswer = question
-                return
-                
             self.tripleHistory.append(question)
             self.hints.append(question)
             self.createSubGraph(question)
-        _, p, o = question
+        
+        # elif answer == 'no':
+        #     res = self.getMatch(question)
+        #     for t in res:
+        #         p1, o1 = t
+        #         print(s,p1,o1)
+        #         self.graph.remove((s, p1, o1))
         self.graph.remove((None, p, o))
-        # self.graph.remove((None, p, None))
 
+
+        # self.graph.remove((None, p, None))
+    # def getMatch(self, question):
+    #     s, p, o = question
+    #     query = """
+    #     SELECT *
+    #     WHERE {
+    #         <%s> ?p ?o.
+
+    #     }
+    #     """%(s)
+    #     qres = self.graph.query(query)
+    #     print(qres)
+    #     return qres
 
     def createSubGraph(self, question):
         """
@@ -74,7 +86,15 @@ class State:
                 ?s ?p2 ?o2 .
             }
         }
-        """%(p, o)
+        """%(p, o)#.format(p, o)
+        # print(query)
+                # {
+                #     ?s1 ?p ?s
+                # }
+                # UNION
+                # {
+                #     ?s ?p1 ?o1
+                # }
 
         print(question, query)
         qres = self.graph.query(query)
