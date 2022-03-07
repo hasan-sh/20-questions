@@ -11,10 +11,9 @@ class Game:
 Here the while loop that keeps the game going on is created. 
 The terminal state is when the number of questions asked exceeds the number of allowed questions specificed in util.constants
 """
-    def __init__(self, graph, nQuestions=constants.QUESTIONS_LIMIT, questioner=None, againstHuman = True): # TODO: load players dynamically.
-        self.graph = graph
+    def __init__(self, nQuestions=constants.QUESTIONS_LIMIT, questioner=None, againstHuman = True): # TODO: load players dynamically.
         self.nQuestions = nQuestions
-        self.state = State(self.graph)
+        self.state = State()
         # Players: [Questioner, Answerer]
         self.questioner = questioner or RandomBot(self.state)
         self.againstHuman = againstHuman
@@ -34,6 +33,7 @@ The terminal state is when the number of questions asked exceeds the number of a
 
             def askAnswerer(question):
                 if self.againstHuman:
+                    print(question)
                     triple = helpers.parseTriple(question)
                     (_, p, o) = triple
                     question =  p + ' ' + o
