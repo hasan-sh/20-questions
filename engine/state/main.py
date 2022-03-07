@@ -3,15 +3,18 @@ Created on Tue Feb 16 16:38:55 2022
 
 @author: hasan-sh
 """
+from statistics import variance
 import rdflib
-from util import helpers, constants
+from util import helpers, constants, api
 """
 TODO: Document
 
 """
 class State:
-    def __init__(self, graph, depth=0):
-        self.graph = graph
+    def __init__(self, depth=0):
+        self.api = api.API()
+        results = self.api.queryKG()
+        self.graph = self.api.parseJSON(results)
         self.subGraphs = []
         self.currentDepth = depth
         self.hints = []
@@ -43,8 +46,8 @@ class State:
             self.tripleHistory.append(question)
             self.hints.append(question)
             self.createSubGraph(question)
-        _, p, o = question
-        self.graph.remove((None, p, o))
+        # _, p, o = question
+        # self.graph.remove((None, p, o))
         # if len(self.graph[:]) < 1: TODO
         #     # reassign graph to the previous one in memory
         #     prevGraph = self.subGraphs[-1]
@@ -86,16 +89,40 @@ class State:
         }
         """%(p, o)
 
+        """
+            each time
+                - look at history:
+                    - hints: [(s0p0o0), (s1p1o1), ...]
+                    - create a query backward; hints[-1:0] --> ?s p0 o0;
+                                                                  p1 o1;
+                                                                  p2 o2;
+                                                                  p3 o3.
+                                                                ?s ?p ?o.
+                    - we have the subgraph!
+        """
+        
+        hints = [" <{}> <{}>".format(p, o) for (_, p, o) in self.hints]
+        query = """
+            select *
+            where {
+                ?s %s.
+                ?s ?p ?o.
+            }
+        """%(';'.join(hints))
+        ### TODO the filter thing
+        """
+                select * where 
+        {
+            ?s  rdf:type <http://schema.org/Thing>.
+            ?s ?p ?o.
+            filter (?p != rdf:type || ?o != <http://schema.org/Thing>)
+        } 
+        """
+        ###
+        print(query)
+        results = self.api.queryKG(query)
+        subGraph = self.api.parseJSON(results, [['s', 'p', 'o']])
         # print(question, query)
-        qres = self.graph.query(query)
-        subGraph = rdflib.Graph()
-        for t in qres:
-            if t.s1:
-                s1, p1, o1 = t.s1, t.p1, t.s
-                subGraph.add((s1, p1, o1))
-            if t.p2:
-                _, p2, o2 = t.s, t.p2, t.o2
-                subGraph.add((s, p2, o2))
-            # print(f"{t.s} {t.p} {t.o}")
         self.subGraphs.append(subGraph)
         self.graph = subGraph
+        

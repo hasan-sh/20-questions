@@ -29,7 +29,6 @@ In addition all questions' triples are saved to history.s
         if not questions:
             return False
         # if len(questions) == 1:
-            
         triple = random.choice(questions)
         self.history.append(triple)
         return triple
@@ -37,16 +36,11 @@ In addition all questions' triples are saved to history.s
     # TODO: what happens if g is empty?
     def getQuestions(self):
         # all entities in state
-        g = list(self.state.graph[::])
+        graph = self.state.graph
         # select possible properties
-        return g
+        return graph
 
 
     def update(self, answer):
         self.state.updateGraph(self.history[-1], answer)
-
-
-
-
-
 
