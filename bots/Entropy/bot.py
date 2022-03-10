@@ -1,1 +1,0 @@
-countryOfOrigin ?property ?p1

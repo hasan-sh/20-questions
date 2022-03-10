@@ -29,6 +29,15 @@ def parseGraph(g):
         parsedGraph.append((s, p, o))
     return parsedGraph
 
+def addFilterSPARQL(hints):
+    s = ''
+    for hint in hints: 
+        print(hint)
+        (_, p, o) = hint
+        s += 'filter (?p != <' + p + '> || ?o != <' + o + '>) '
+    return s
+
+
 # def to_simple_triples(file, destination_file, mode):
 #     # reading the nt file
 #     print(end='Loading data... ', flush=True)
