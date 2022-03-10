@@ -73,21 +73,21 @@ class State:
             ?s ?p1 ?o1
             }
         """
-        s, p, o = question
+        # s, p, o = question
         # TODO: Do we need the union? Fix it!
-        query = """
-        SELECT *
-        WHERE {
-            ?s <%s> <%s> .
-            {
-                ?s1 ?p1 ?s .
-            }
-            UNION
-            {
-                ?s ?p2 ?o2 .
-            }
-        }
-        """%(p, o)
+        # query = """
+        # SELECT *
+        # WHERE {
+        #     ?s <%s> <%s> .
+        #     {
+        #         ?s1 ?p1 ?s .
+        #     }
+        #     UNION
+        #     {
+        #         ?s ?p2 ?o2 .
+        #     }
+        # }
+        # """%(p, o)
 
         """
             each time
@@ -100,28 +100,37 @@ class State:
                                                                 ?s ?p ?o.
                     - we have the subgraph!
         """
-        
-        hints = [" <{}> <{}>".format(p, o) for (_, p, o) in self.hints]
+        # print("################ HINTS: ", self.hints)
+        hints = [" <{}> <{}>".format(p, o) for (_, p, o) in self.hints] # none of those could be labels
+        # query = """
+        #     select *
+        #     where {
+        #         ?s %s.
+        #         ?s ?p ?o. """%(';'.join(hints)) + \
+        #          helpers.addFilterSPARQL(self.hints) + \
+        #         """
+        #     }
+        # """
+        # print(query)
+        # results = self.api.queryKG(query)
+        # subGraph = self.api.parseJSON(results, [['s', 'p', 'o']])
+        # self.subGraphs.append(subGraph)
+        # self.graph = subGrap
+
         query = """
             select *
             where {
                 ?s %s.
-                ?s ?p ?o.
+                {?s ?p ?o.}
+                UNION
+                {?s1 ?p1 ?s}"""%(';'.join(hints)) + \
+                 helpers.addFilterSPARQL(self.hints) + \
+                """
             }
-        """%(';'.join(hints))
-        ### TODO the filter thing
         """
-                select * where 
-        {
-            ?s  rdf:type <http://schema.org/Thing>.
-            ?s ?p ?o.
-            filter (?p != rdf:type || ?o != <http://schema.org/Thing>)
-        } 
-        """
-        ###
         print(query)
         results = self.api.queryKG(query)
-        subGraph = self.api.parseJSON(results, [['s', 'p', 'o']])
+        subGraph = self.api.parseJSON(results, [['s', 'p', 'o'],['s1', 'p1', 's']])
         # print(question, query)
         self.subGraphs.append(subGraph)
         self.graph = subGraph

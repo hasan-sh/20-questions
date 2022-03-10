@@ -55,11 +55,11 @@ questioner = options.questioner
 fileName = options.fileName
 
 print('Initializing the game..')
-t = time.process_time()
-# graph = initializeGame(fileName)
-elapsed_t = time.process_time() - t
-if dev:
-    print('It took {}'.format(elapsed_t))
+# t = time.process_time()
+# # graph = initializeGame(fileName)
+# elapsed_t = time.process_time() - t
+# if dev:
+#     print('It took {}'.format(elapsed_t))
 for i in range(numGame):
 
     print('Running the game..')
