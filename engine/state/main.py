@@ -17,7 +17,8 @@ class State:
         self.graph = self.api.parseJSON(results)
         self.subGraphs = []
         self.currentDepth = depth
-        self.hints = []
+        self.yesHints = []
+        self.noHints = []
         self.tripleHistory = []
         self.questionsAsked = 0
         self.foundAnswer = ''
@@ -28,26 +29,27 @@ class State:
 
     # idea is to update the graph after the user responds
     def updateGraph(self, question, answer):
-        # algorithm for updating the do some magic
-        # ...
+        # algorithm for updating the 
         # ...
         #
         print("You said {}".format(answer))
         answer = answer.lower()
         if answer == 'yes':
             # update graph. Save the prop/obj into a list
-            # triples = self.graph.triples(question)
             _, p, _ = helpers.parseTriple(question)
-            if p == 'label':
-                # found it! 
+            if p == 'label': # found it! 
                 self.foundAnswer = question
                 return
-                
+        
             self.tripleHistory.append(question)
-            self.hints.append(question)
-            self.createSubGraph(question)
-        # _, p, o = question
-        # self.graph.remove((None, p, o))
+            self.yesHints.append(question)
+        elif answer == 'no':
+            self.noHints.append(question)
+
+        self.createSubGraph(question)
+        # print("@@@@@@@@@@@@@@@@@@@@@@@",self.yesHints, self.noHints)
+
+
         # if len(self.graph[:]) < 1: TODO
         #     # reassign graph to the previous one in memory
         #     prevGraph = self.subGraphs[-1]
@@ -56,8 +58,6 @@ class State:
         #     # p o?
         #     # o = s, p = is it
         #     # is it s?
-
-
         # self.graph.remove((None, p, None))
 
 
@@ -73,22 +73,7 @@ class State:
             ?s ?p1 ?o1
             }
         """
-        # s, p, o = question
-        # TODO: Do we need the union? Fix it!
-        # query = """
-        # SELECT *
-        # WHERE {
-        #     ?s <%s> <%s> .
-        #     {
-        #         ?s1 ?p1 ?s .
-        #     }
-        #     UNION
-        #     {
-        #         ?s ?p2 ?o2 .
-        #     }
-        # }
-        # """%(p, o)
-
+        
         """
             each time
                 - look at history:
@@ -100,14 +85,13 @@ class State:
                                                                 ?s ?p ?o.
                     - we have the subgraph!
         """
-        # print("################ HINTS: ", self.hints)
-        hints = [" <{}> <{}>".format(p, o) for (_, p, o) in self.hints] # none of those could be labels
+        # yesHints = [" <{}> <{}>".format(p, o) for (_, p, o) in self.yesHints]
         # query = """
         #     select *
         #     where {
         #         ?s %s.
-        #         ?s ?p ?o. """%(';'.join(hints)) + \
-        #          helpers.addFilterSPARQL(self.hints) + \
+        #         ?s ?p ?o. """%(';'.join(yesHints)) + \
+        #          helpers.addFilterSPARQL(self.yesHints, self.noHints) + \
         #         """
         #     }
         # """
@@ -117,20 +101,28 @@ class State:
         # self.subGraphs.append(subGraph)
         # self.graph = subGrap
 
+
+        # yesHints = [" <{}> <{}>".format(p, o) for (_, p, o) in self.yesHints] # none of those could be labels
         query = """
             select *
             where {
                 ?s %s.
                 {?s ?p ?o.}
                 UNION
-                {?s1 ?p1 ?s}"""%(';'.join(hints)) + \
-                 helpers.addFilterSPARQL(self.hints) + \
+                {?s1 ?p1 ?s}"""%(';'.join([" <{}> <{}>".format(p, o) for (_, p, o) in self.yesHints])) + \
+                 helpers.addFilterSPARQL(self.yesHints, self.noHints) + \
                 """
             }
         """
+        if not self.yesHints: # If no (yes) answers have been given yet.
+            query="""select * where { ?s a ?o .
+                                                BIND('http://www.w3.org/1999/02/22-rdf-syntax-ns#type' AS ?p) """+ \
+                                                helpers.addFilterSPARQL(noHints = self.noHints) +"""}"""
+        
         print(query)
         results = self.api.queryKG(query)
-        subGraph = self.api.parseJSON(results, [['s', 'p', 'o'],['s1', 'p1', 's']])
+        # subGraph = self.api.parseJSON(results, [['s', 'p', 'o'],['s1', 'p1', 's']])
+        subGraph = self.api.parseJSON(results, [['s', 'p', 'o'],['s', 'p1', 's1']])
         # print(question, query)
         self.subGraphs.append(subGraph)
         self.graph = subGraph
