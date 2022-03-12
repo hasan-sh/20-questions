@@ -26,7 +26,7 @@ class DummyBot:
 
     def getQuestions(self):
         # all entities in state
-        g = list(self.state.graph[::])
+        g = self.state.graph
         # select possible properties
         return g
 

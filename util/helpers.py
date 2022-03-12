@@ -29,33 +29,31 @@ def parseGraph(g):
         parsedGraph.append((s, p, o))
     return parsedGraph
 
-def addFilterSPARQL(hints):
+literalPredicates = ["http://www.w3.org/2000/01/rdf-schema#label", "http://schema.org/birthDate", "http://schema.org/url"]
+def addFilterSPARQL(yesHints = [], noHints = []):
+    """
+    
+    """
     s = ''
-    for hint in hints: 
-        print(hint)
-        (_, p, o) = hint
-        s += 'filter (?p != <' + p + '> || ?o != <' + o + '>) '
-    return s
-
-
-# def to_simple_triples(file, destination_file, mode):
-#     # reading the nt file
-#     print(end='Loading data... ', flush=True)
-
-#     g = rdflib.Graph()
-#     g.parse(file, format=mode)
-
-#     print('OK ')
-
-#     # opening the destination file in append mode
-#     file_object = open(destination_file, 'a', encoding="utf-8")
-
-#     for triple in g:
-#         s, p, o = parse_uri(triple)
-#         # Append spo (tab separated at the end of file)
-#         file_object.write(s+'\t'+p+'\t'+o)
-#         file_object.write('\n')
-#     file_object.close()
-#     print('Done')
-
-
+    if yesHints:
+        for hint in yesHints: 
+            # print(hint)
+            (_, p, o) = hint
+            if p in literalPredicates:
+                ## TODO: Make a list of all literal predicates that refer to a literal in the graph. 
+                # We found three so far but it needs to be automated (sparql query)
+                s += 'filter (?p != <' + p + '> || ?o != "' + o + '") '
+            else:
+                s += 'filter (?p != <' + p + '> || ?o != <' + o + '>) '
+    if noHints:
+        s += 'filter not exists {'
+        for hint in noHints: 
+        # print(hint)
+            (_, p, o) = hint
+            if p in literalPredicates:
+                ## TODO: Make a list of all literal predicates that refer to a literal in the graph. 
+                # We found three so far but it needs to be automated (sparql query)
+                s += '?s <' + p + '> "' + o + '". '
+            else:
+                s += '?s <' + p + '> <' + o + '>. '
+    return s+'}'
