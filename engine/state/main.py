@@ -4,7 +4,6 @@ Created on Tue Feb 16 16:38:55 2022
 @author: hasan-sh
 """
 from statistics import variance
-import rdflib
 from util import helpers, constants, api
 """
 TODO: Document
@@ -32,7 +31,7 @@ class State:
         # algorithm for updating the 
         # ...
         #
-        print("You said {}".format(answer))
+        # print("You said {}".format(answer))
         answer = answer.lower()
         if answer == 'yes':
             # update graph. Save the prop/obj into a list
@@ -47,19 +46,6 @@ class State:
             self.noHints.append(question)
 
         self.createSubGraph(question)
-        # print("@@@@@@@@@@@@@@@@@@@@@@@",self.yesHints, self.noHints)
-
-
-        # if len(self.graph[:]) < 1: TODO
-        #     # reassign graph to the previous one in memory
-        #     prevGraph = self.subGraphs[-1]
-        #     subjects = prevGraph.subjects()
-        #     newGraph = rdflib.Graph()
-        #     # p o?
-        #     # o = s, p = is it
-        #     # is it s?
-        # self.graph.remove((None, p, None))
-
 
     def createSubGraph(self, question):
         """
@@ -73,36 +59,8 @@ class State:
             ?s ?p1 ?o1
             }
         """
+
         
-        """
-            each time
-                - look at history:
-                    - hints: [(s0p0o0), (s1p1o1), ...]
-                    - create a query backward; hints[-1:0] --> ?s p0 o0;
-                                                                  p1 o1;
-                                                                  p2 o2;
-                                                                  p3 o3.
-                                                                ?s ?p ?o.
-                    - we have the subgraph!
-        """
-        # yesHints = [" <{}> <{}>".format(p, o) for (_, p, o) in self.yesHints]
-        # query = """
-        #     select *
-        #     where {
-        #         ?s %s.
-        #         ?s ?p ?o. """%(';'.join(yesHints)) + \
-        #          helpers.addFilterSPARQL(self.yesHints, self.noHints) + \
-        #         """
-        #     }
-        # """
-        # print(query)
-        # results = self.api.queryKG(query)
-        # subGraph = self.api.parseJSON(results, [['s', 'p', 'o']])
-        # self.subGraphs.append(subGraph)
-        # self.graph = subGrap
-
-
-        # yesHints = [" <{}> <{}>".format(p, o) for (_, p, o) in self.yesHints] # none of those could be labels
         query = """
             select *
             where {
@@ -119,11 +77,10 @@ class State:
                                                 BIND('http://www.w3.org/1999/02/22-rdf-syntax-ns#type' AS ?p) """+ \
                                                 helpers.addFilterSPARQL(noHints = self.noHints) +"""}"""
         
-        print(query)
+        # print(query)
         results = self.api.queryKG(query)
         # subGraph = self.api.parseJSON(results, [['s', 'p', 'o'],['s1', 'p1', 's']])
         subGraph = self.api.parseJSON(results, [['s', 'p', 'o'],['s', 'p1', 's1']])
-        # print(question, query)
         self.subGraphs.append(subGraph)
         self.graph = subGraph
         
