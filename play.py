@@ -23,10 +23,15 @@ def initializeGame(fileName='wikitop2021_small.nt'):
 ## Parse the command line options
 parser = ArgumentParser()
 
-parser.add_argument("-p", "--questioner",
+parser.add_argument("-q", "--questioner",
                     dest="questioner",
                     help="Choose bot to play with. (default: Random.)", # TODO: tournament?? so, against bots?!
                     default=None)
+
+parser.add_argument("-o", "--human-opponent",
+                    dest="opponent",
+                    help="Playing against a human or a bot (Default: True)",
+                    default=True)
 
 parser.add_argument("-d", "--development",
                     dest="dev",
@@ -52,16 +57,13 @@ dev = options.dev
 
 questioner = options.questioner
 
+againstHuman = options.opponent == True
+
 fileName = options.fileName
 
 print('Initializing the game..')
-# t = time.process_time()
-# # graph = initializeGame(fileName)
-# elapsed_t = time.process_time() - t
-# if dev:
-#     print('It took {}'.format(elapsed_t))
 for i in range(numGame):
 
     print('Running the game..')
-    game = Game(questioner=questioner, againstHuman=False) # TODO: pass players through the CL
+    game = Game(questioner=questioner, againstHuman=againstHuman) # TODO: pass players through the CL
     game.run()
