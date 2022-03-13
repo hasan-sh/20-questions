@@ -17,7 +17,7 @@ The terminal state is when the number of questions asked exceeds the number of a
         # Players: [Questioner, Answerer]
         self.questioner = questioner or RandomBot(self.state)
         self.againstHuman = againstHuman
-        self.answerer = 'User' if self.againstHuman else Answerer(self.graph)
+        self.answerer = 'User' if self.againstHuman else Answerer()
 
     def run(self):
         while self.state.questionsAsked < self.nQuestions:
