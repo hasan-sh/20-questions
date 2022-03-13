@@ -1,10 +1,10 @@
 # import requests
 # from msilib.schema import SelfReg
 # from tokenize import Triple
-from SPARQLWrapper import SPARQLWrapper, JSON
-from rdflib import RDF
+from SPARQLWrapper import SPARQLWrapper, JSON, SPARQLExceptions
 from util import constants
 import time
+import sys
 
 class API(SPARQLWrapper):
     def __init__(self) -> None:
@@ -13,9 +13,15 @@ class API(SPARQLWrapper):
     # by default we select all entities of type ?o. You can pass a query to change this behaviour.
     def queryKG(self, query="""select * where { ?s a ?o .
                                                 BIND('http://www.w3.org/1999/02/22-rdf-syntax-ns#type' AS ?p) }"""):
-        self.setQuery(query)
-        self.setReturnFormat(JSON)
-        results = self.query().convert()
+        
+        try:
+            self.setQuery(query)
+            self.setReturnFormat(JSON)
+            results = self.query().convert()
+        except:# SPARQLExceptions.QueryBadFormed as e :
+            # e = sys.exc_info()[0]
+            # print('ERROR: ', e)
+            return {'results': {'bindings': []}}
         return results
         
     # the variables should be compatible with whatever variables you want to extract from the query.
@@ -32,7 +38,14 @@ class API(SPARQLWrapper):
 # t = time.process_time()
 # # graph = initializeGame(fileName)
 # a = API()
-# r = a.queryKG()
+# r = a.queryKG("""
+# prefix yago: <http://yago-knowledge.org/resource/>
+# select *
+#             where {
+#                 <http://yago-knowledge.org/resource/Can't_Remember_to_Forget_You> <http://schema.org/composer> ?o . 
+#             }
+# """)
+# print(a.parseJSON(r, ['o']))
 # elapsed_t = time.process_time() - t
 # print(elapsed_t)
 # a.parseJSON(r)

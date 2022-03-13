@@ -1,16 +1,7 @@
 import os
-import rdflib
 from pathlib import Path
 import random
 from util import constants
-
-def readGraph(fileName, mode='nt'):
-    ''' Reads the knowledge base and constructs a KG of it '''
-    g = rdflib.Graph()
-    parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    targetFile = 'datasets/{}'.format(fileName)
-    g.parse(os.path.join(parent, targetFile), format=mode)
-    return g
 
 def parseTriple(triple):
     ''' Makes a human readable string out of a single triple of URI's'''
