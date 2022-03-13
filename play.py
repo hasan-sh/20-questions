@@ -63,5 +63,5 @@ print('Initializing the game..')
 for i in range(numGame):
 
     print('Running the game..')
-    game = Game(questioner=questioner) # TODO: pass players through the CL
+    game = Game(questioner=questioner, againstHuman=False) # TODO: pass players through the CL
     game.run()

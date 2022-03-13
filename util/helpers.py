@@ -2,6 +2,7 @@ import os
 import rdflib
 from pathlib import Path
 import random
+from util import constants
 
 def readGraph(fileName, mode='nt'):
     ''' Reads the knowledge base and constructs a KG of it '''
@@ -29,7 +30,7 @@ def parseGraph(g):
         parsedGraph.append((s, p, o))
     return parsedGraph
 
-literalPredicates = ["http://www.w3.org/2000/01/rdf-schema#label", "http://schema.org/birthDate", "http://schema.org/url"]
+
 def addFilterSPARQL(yesHints = [], noHints = []):
     """
     
@@ -39,21 +40,22 @@ def addFilterSPARQL(yesHints = [], noHints = []):
         for hint in yesHints: 
             # print(hint)
             (_, p, o) = hint
-            if p in literalPredicates:
-                ## TODO: Make a list of all literal predicates that refer to a literal in the graph. 
+            if p in constants.literalPredicates:
+                ## TODO: Make a list of all literal predicates that refer to a literal in the graph.
                 # We found three so far but it needs to be automated (sparql query)
-                s += 'filter (?p != <' + p + '> || ?o != "' + o + '") '
+                s += 'filter (?p != <' + p + '> || ?o != "' + o + '") \n'
             else:
-                s += 'filter (?p != <' + p + '> || ?o != <' + o + '>) '
+                s += 'filter (?p != <' + p + '> || ?o != <' + o + '>) \n'
     if noHints:
         s += 'filter not exists {'
         for hint in noHints: 
         # print(hint)
             (_, p, o) = hint
-            if p in literalPredicates:
-                ## TODO: Make a list of all literal predicates that refer to a literal in the graph. 
+            if p in constants.literalPredicates:
+                ## TODO: Make a list of all literal predicates that refer to a literal in the graph.
                 # We found three so far but it needs to be automated (sparql query)
-                s += '?s <' + p + '> "' + o + '". '
+                s += '?s <' + p + '> "' + o + '". \n'
             else:
-                s += '?s <' + p + '> <' + o + '>. '
-    return s+'}'
+                s += '?s <' + p + '> <' + o + '>. \n'
+        s += '}'
+    return s
