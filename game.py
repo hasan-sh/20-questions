@@ -25,9 +25,10 @@ The terminal state is when the number of questions asked exceeds the number of a
             if self.state.foundAnswer:
                 _, _, o = helpers.parseTriple(self.state.foundAnswer)
                 print("It is "+ o)
-                break
+                return 1 # 1 indicates the bot has won. 
             if not question:
-                input(constants.EMPTY_KG)
+                if self.againstHuman:
+                    input(constants.EMPTY_KG)
                 break # TODO: don't break but change the logic based on user's input!
             # answer = input('Is it {}'.format(question))
 
@@ -48,6 +49,7 @@ The terminal state is when the number of questions asked exceeds the number of a
                     print('Please either of {}'.format(constants.POSSIBLE_ANSWERS))
                     askAnswerer(question)
             askAnswerer(question)
+        return 0 # 0 indicates the bot has lost. 
         
 
 
