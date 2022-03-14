@@ -7,10 +7,7 @@ class Answerer:
         # The answerer thinks of an entity.
         self.api = api.API()
         self.entity = self.pickEntity()
-        
-        # self.entity = ['http://yago-knowledge.org/resource/Rihanna','http://schema.org/birthPlace','http://yago-knowledge.org/resource/Saint_Michael,_Barbados'] 
         self.entityTriples = self.collectTriples(self.entity)
-
         # print('CHOSEN ENTITY: ', self.entity)
 
     def collectTriples(self, entity):
@@ -21,11 +18,9 @@ class Answerer:
                 UNION
                 {?s1 ?p1 <%s> .}
             }
-        """%(entity[0],entity[0])
+        """%(entity[0]['value'], entity[0]['value'])
         qres = self.api.queryKG(query)  
-        qres = self.api.parseJSON(qres,[['p','o'],['s1','p1'],['p1','s1']])
-        # qres = self.api.parseJSON(qres,[['p','o'],['s1','p1']])
-        # print(qres)
+        qres = self.api.parseJSON(qres, [['p','o'], ['p1','s1']])
         return qres
 
 
@@ -34,8 +29,8 @@ class Answerer:
         Example: questionner("type human?")
                  answerer(does "type human" hold?)
         """
-        _,p,o = question
-        if [p,o] in self.entityTriples:
+        _, p, o = question
+        if [p['value'], o['value']] in self.entityTriples:
             return 'yes'
         else:
             return 'no'
@@ -51,7 +46,7 @@ class Answerer:
             }
         """
         g = self.api.queryKG(query)
-        g = self.api.parseJSON(g,['s'])
+        g = self.api.parseJSON(g, ['s'])
         entity = random.choice(g)
         return entity
         

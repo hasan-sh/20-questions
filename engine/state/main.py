@@ -1,10 +1,5 @@
-"""
-Created on Tue Feb 16 16:38:55 2022
-
-@author: hasan-sh
-"""
 from statistics import variance
-from util import helpers, constants, api
+from util import helpers, api
 """
 TODO: Document
 
@@ -45,9 +40,9 @@ class State:
         elif answer == 'no':
             self.noHints.append(question)
 
-        self.createSubGraph(question)
+        self.createSubGraph()
 
-    def createSubGraph(self, question):
+    def createSubGraph(self):
         """
         Example: Is it of type Human? If so, we retrieve everyhing that's related to _all human subjects_.
         ?s a Human .
@@ -67,7 +62,7 @@ class State:
                 ?s %s.
                 {?s ?p ?o.}
                 UNION
-                {?s1 ?p1 ?s}"""%(';'.join([" <{}> <{}>".format(p, o) for (_, p, o) in self.yesHints])) + \
+                {?s1 ?p1 ?s}"""%(';'.join([" <{}> <{}>".format(p['value'], o['value']) for (_, p, o) in self.yesHints])) + \
                  helpers.addFilterSPARQL(self.yesHints, self.noHints) + \
                 """
             }
@@ -79,7 +74,6 @@ class State:
         
         # print(query)
         results = self.api.queryKG(query)
-        # subGraph = self.api.parseJSON(results, [['s', 'p', 'o'],['s1', 'p1', 's']])
         subGraph = self.api.parseJSON(results, [['s', 'p', 'o'],['s', 'p1', 's1']])
         self.subGraphs.append(subGraph)
         self.graph = subGraph
