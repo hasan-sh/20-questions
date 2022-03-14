@@ -1,10 +1,5 @@
-# import requests
-# from msilib.schema import SelfReg
-# from tokenize import Triple
 from SPARQLWrapper import SPARQLWrapper, JSON, SPARQLExceptions
 from util import constants
-import time
-import sys
 
 class API(SPARQLWrapper):
     def __init__(self) -> None:
@@ -31,21 +26,6 @@ class API(SPARQLWrapper):
         for result in results["results"]["bindings"]:
             for keys in variables:
                 if set(keys) == set(result.keys()): # this checked only n times, where n is the length of variables
-                    spo = [result[key]['value'] for key in keys]
+                    spo = [result[key] for key in keys]
                     output.append(spo)
         return output
-
-# t = time.process_time()
-# # graph = initializeGame(fileName)
-# a = API()
-# r = a.queryKG("""
-# prefix yago: <http://yago-knowledge.org/resource/>
-# select *
-#             where {
-#                 <http://yago-knowledge.org/resource/Can't_Remember_to_Forget_You> <http://schema.org/composer> ?o . 
-#             }
-# """)
-# print(a.parseJSON(r, ['o']))
-# elapsed_t = time.process_time() - t
-# print(elapsed_t)
-# a.parseJSON(r)

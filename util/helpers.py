@@ -1,14 +1,16 @@
-import os
-from pathlib import Path
-import random
-from util import constants
+import importlib
+
+# def parseTriple(triple):
+#     ''' Makes a human readable string out of a single triple of URI's'''
+#     s = triple[0].split('/')[-1]
+#     p = triple[1].split('/')[-1].split('#')[-1]
+#     o = triple[2].split('/')[-1]
+#     return (s, p, o)
 
 def parseTriple(triple):
     ''' Makes a human readable string out of a single triple of URI's'''
-    s = triple[0].split('/')[-1]
-    p = triple[1].split('/')[-1].split('#')[-1]
-    o = triple[2].split('/')[-1]
-    return (s, p, o)
+    return [v.get('value').split('/')[-1].split('#')[-1] for v in triple]
+
 
 def parseGraph(g):
     ''' Transform all triples in a graph to human readable strings.
@@ -27,26 +29,28 @@ def addFilterSPARQL(yesHints = [], noHints = []):
     
     """
     s = ''
-    if yesHints:
-        for hint in yesHints: 
-            # print(hint)
-            (_, p, o) = hint
-            if p in constants.literalPredicates:
-                ## TODO: Make a list of all literal predicates that refer to a literal in the graph.
-                # We found three so far but it needs to be automated (sparql query)
-                s += 'filter (?p != <' + p + '> || ?o != "' + o + '") \n'
-            else:
-                s += 'filter (?p != <' + p + '> || ?o != <' + o + '>) \n'
-    if noHints:
-        s += 'filter not exists {'
-        for hint in noHints: 
-        # print(hint)
-            (_, p, o) = hint
-            if p in constants.literalPredicates:
-                ## TODO: Make a list of all literal predicates that refer to a literal in the graph.
-                # We found three so far but it needs to be automated (sparql query)
-                s += '?s <' + p + '> "' + o + '". \n'
-            else:
-                s += '?s <' + p + '> <' + o + '>. \n'
-        s += '}'
+    for hint in yesHints: 
+        (_, p, o) = hint
+        s += f"\nfilter (?p != <{p['value']}> || ?o != "
+        if o['type'] == "literal":
+            s += f"\"{o['value']}{o['xml:lang']}\")"
+        else:
+            s += f"<{o['value']}>)"
+    
+    for hint in noHints: 
+        (_, p, o) = hint
+        s += f"\nfilter not exists {{ ?s <{p['value']}> "
+        if o['type'] == "literal":
+            s += f"\"{o['value']}{o['xml:lang']}\" . }}"
+        else:
+            s += f"<{o['value']}> . }}"
     return s
+
+def load_bot(name):
+    """
+    name: The folder name of the bot.
+    """
+    path = f'bots.{name}.bot'
+    module = importlib.import_module(path)
+    bot = getattr(module, f'{name}Bot')
+    return bot

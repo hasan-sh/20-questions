@@ -2,7 +2,7 @@
 
 from engine.state.main import State
 from util import helpers, constants
-from bots.Random.bot import RandomBot
+from bots.Base.bot import BaseBot
 from bots.Answerer.bot import Answerer
 
 
@@ -11,11 +11,11 @@ class Game:
 Here the while loop that keeps the game going on is created. 
 The terminal state is when the number of questions asked exceeds the number of allowed questions specificed in util.constants
 """
-    def __init__(self, nQuestions=constants.QUESTIONS_LIMIT, questioner=None, againstHuman = True): # TODO: load players dynamically.
+    def __init__(self, state=State(), nQuestions=constants.QUESTIONS_LIMIT, questioner=None, againstHuman = True): # TODO: load players dynamically.
         self.nQuestions = nQuestions
-        self.state = State()
+        self.state = state
         # Players: [Questioner, Answerer]
-        self.questioner = questioner or RandomBot(self.state)
+        self.questioner = questioner or BaseBot(self.state)
         self.againstHuman = againstHuman
         self.answerer = 'User' if self.againstHuman else Answerer()
 

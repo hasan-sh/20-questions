@@ -1,24 +1,15 @@
 import random
-from util import helpers, constants
 
-
-class RandomBot:
-    """
-Random bot: This bot asks random questions from the KG. 
-If answer is yes:
-    1- A sparql query is constructed from the triple used to ask the question. All instances where the subject appears either as
-       subject or object (in the previous KG) are retrieved (through a UNION) and a new sub-KG is constructed from them.
-    2- the triple itself is removed along with all triples where the predicate and object matches. 
-If answer is no:
-    1- the triple itself is removed along with all triples where the predicate and object matches. 
-In addition all questions' triples are saved to history.s
 """
+Random bot that does not rely on the state. This bot asks random questions from the KG.
+The answer (whether yes or no) is not incorporated at all in the next question nor removed from the KG.
+It is however saved in the history of asked questions.
+
+"""
+class RandomBot:
     _name = 'Random Bot'
 
     def __init__(self, state, depth=20):
-        """
-        :param int depth: bllalaib
-        """
         self.state = state
         self.depth = depth
         self.history = []
@@ -28,19 +19,26 @@ In addition all questions' triples are saved to history.s
         questions = self.getQuestions()
         if not questions:
             return False
-        # if len(questions) == 1:
         triple = random.choice(questions)
         self.history.append(triple)
         return triple
 
-    # TODO: what happens if g is empty?
     def getQuestions(self):
         # all entities in state
-        graph = self.state.graph
+        g = self.state.graph
         # select possible properties
-        return graph
+        return g
+
 
 
     def update(self, answer):
-        self.state.updateGraph(self.history[-1], answer)
+        # dummy bot that doesn't rely on the state.
+        # self.state.updateGraph Is the basic approach of updating the state.
+        # Any other approaches, can be appended here in this method.
+        pass
+
+
+
+
+
 

@@ -3,7 +3,6 @@ from engine import state
 from game import Game
 from util import helpers
 from argparse import ArgumentParser
-import time
 
 """
 Running this file in the command line will start the game. 
@@ -25,7 +24,7 @@ parser = ArgumentParser()
 
 parser.add_argument("-q", "--questioner",
                     dest="questioner",
-                    help="Choose bot to play with. (default: Random.)", # TODO: tournament?? so, against bots?!
+                    help="Choose bot to play with. (default: Base.)", # TODO: tournament?? so, against bots?!
                     default=None)
 
 parser.add_argument("-o", "--human-opponent",
@@ -55,7 +54,7 @@ numGame = options.games
 
 dev = options.dev
 
-questioner = options.questioner
+questioner = helpers.load_bot(options.questioner) if options.questioner else options.questioner
 
 againstHuman = options.opponent == True
 
