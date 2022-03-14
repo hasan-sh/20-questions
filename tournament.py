@@ -3,49 +3,33 @@
 - bot vs human: needed?
 """
 
-import importlib
 import numpy as np
 from argparse import ArgumentParser
 
 from engine.state.main import State
 from game import Game
-from util import helpers, constants
-from bots.Random.bot import RandomBot
-from bots.Answerer.bot import Answerer
+from util import helpers
 
-def load_bot(name):
-    """
-    name: The folder name of the bot.
-    """
-    path = f'bots.{name}.bot'
-    # print(f'Importing {path}')
-    module = importlib.import_module(path)
-    bot = getattr(module, f'{name}Bot')
-    return bot
-    # bot = botClass()
 
-    # print(bot)
-
-def main(botName, repeat=10, questionLimit=50):
+def main(botName, repeat=10, questionLimit=100):
     questionsAsked = np.array([])
     winners = np.array([])
     for i in range(repeat):
         print(f'Playing game #{i+1}')
         state = State()
-        # Players: [Questioner, Answerer]
-        bot = load_bot(botName)
+        bot = helpers.load_bot(botName)
         questioner = bot(state)
-        game = Game(nQuestions=questionLimit, questioner=questioner, againstHuman=False)
+        game = Game(state=state, nQuestions=questionLimit, questioner=questioner, againstHuman=False)
         winner = game.run()
         winners = np.append(winners, [winner])
         questionsAsked = np.append(questionsAsked, [state.questionsAsked])
-    wonByBot = winners[np.where(winners == 0)].size
-    averages = np.array([])
-    for q in questionsAsked:
-        averages = np.append(averages, [q/questionLimit])
-    averageWins = np.mean(averages)
+    wonByBot = winners[np.where(winners == 1)].size
     bestGame = np.min(questionsAsked)
-    print(f"The ({botName}) bot has won {wonByBot} games with an average of {averageWins}. \n The best game {bestGame}")
+    print(f"\n \
+    The {botName} bot has won {wonByBot} games. \n \
+    Average number of asked questions {round(np.mean(questionsAsked))} out of {questionLimit}.\n \
+    Std: {np.std(questionsAsked)}. \n \
+    Number of asked questions in the best game {round(bestGame)} out of {questionLimit} \n ")
     
 
 
@@ -59,8 +43,8 @@ parser.add_argument("-r", "--repeat",
 
 parser.add_argument("-p", "--player",
                     dest="player",
-                    help="The bot to play against the answerer (default: Random)", # TODO: tournament?? so, against bots?!
-                    default='Random')
+                    help="The bot to play against the answerer (default: Base)", # TODO: tournament?? so, against bots?!
+                    default='Base')
 
 options = parser.parse_args()
 repeat = options.repeat
