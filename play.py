@@ -65,4 +65,5 @@ for i in range(numGame):
 
     print('Running the game..')
     game = Game(questioner=questioner, againstHuman=againstHuman) # TODO: pass players through the CL
-    game.run()
+    winner = game.run()
+    print("The winner ", winner)
