@@ -33,10 +33,33 @@ In addition all questions' triples are saved to history.s
 
     # TODO: what happens if g is empty?
     def getQuestions(self):
+        # return self.rescursive_query(self.state.yesHints[-1][1]['value'], 
+        #     self.state.yesHints[-1][2]['value'])
+        
         # all entities in state
         graph = self.state.graph
         # select possible properties
         return graph
+
+    def rescursive_query(self, p, o, depth=0):
+        query = f"""
+        SELECT distinct {p} {o} 
+                (count(concat(str({p}), str({o}))) as ?poCount)
+        WHERE {{
+        ?s {p} {o}.
+        }}
+        GROUP BY {p} {o}
+        ORDER BY DESC (?poCount )
+        limit 10000
+        """
+        # make query
+        # select result
+        qres = self.state.api.queryKG(query=query)
+        qres = self.state.api.parseJSON(qres, ["s"])
+        result = qres[0]
+        if depth > 0:
+            return self.rescursive_query(result[0]['value'], result[1]['value'], depth-1)
+        return result
 
 
     def update(self, answer):

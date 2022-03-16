@@ -8,6 +8,8 @@ class State:
     def __init__(self, depth=0):
         self.api = api.API()
         results = self.api.queryKG()
+        # results = helpers.rescursive_query('?p', '?o', self.api)
+        # print('first results ', results)
         self.graph = self.api.parseJSON(results)
         self.subGraphs = []
         self.currentDepth = depth
