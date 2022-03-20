@@ -11,7 +11,7 @@ from game import Game
 from util import helpers
 
 
-def main(botName, repeat=10, questionLimit=50):
+def main(botName, repeat=10, questionLimit=100):
     questionsAsked = np.array([])
     winners = np.array([])
     for i in range(repeat):
