@@ -18,12 +18,17 @@ class State:
         self.tripleHistory = []
         self.questionsAsked = 0
         self.foundAnswer = ''
+        self._prefixes = {}
 
-    # update the state of the game.
-    def update(self):
+      # update the state of the game.
+    def update(self, question):
         self.questionsAsked += 1
+        prefixes = helpers.parsePrefixes(question)
+        for prefix in prefixes:
+            self._prefixes[prefix] = True
 
-    # idea is to update the graph after the user responds
+    # Updates graph each time an answer is given
+
     def updateGraph(self, question, answer):
         # algorithm for updating the 
         # ...
@@ -31,7 +36,7 @@ class State:
         # print("You said {}".format(answer))
         answer = answer.lower()
         if answer == 'yes':
-            # update graph. Save the prop/obj into a list
+            # update graph. Save the p,o into a list
             _, p, _ = helpers.parseTriple(question)
             if p == 'label': # found it! 
                 self.foundAnswer = question
@@ -46,37 +51,36 @@ class State:
 
     def createSubGraph(self):
         """
-        Example: Is it of type Human? If so, we retrieve everyhing that's related to _all human subjects_.
-        ?s a Human .
-            {
-            ?s1 ?p ?s
-            }
-            union
-            {
-            ?s ?p1 ?o1
-            }
+        Minimize the graph each time an answer is given. This function makes use of yesHints and noHints to query the graph.
         """
-
+        prefixes = self.api.prefixes # [f'PREFIX {x}: <{prefix}>' for (prefix, x) in self.api.prefixes.items()]
         
         query = """
+        %s
             select *
             where {
-                ?s %s.
-                {?s ?p ?o.}
-                UNION
-                {?s1 ?p1 ?s}"""%(';'.join([" <{}> <{}>".format(p['value'], o['value']) for (_, p, o) in self.yesHints])) + \
-                 helpers.addFilterSPARQL(self.yesHints, self.noHints) + \
+                 ?s %s;
+                    ?p ?o.
+                """%('\n'.join(prefixes),
+                    ';'.join([" {} {}".format(p['prefix_entity'], o['prefix_entity']) for (_, p, o) in self.yesHints])) + \
+                    helpers.addFilterSPARQL(self.yesHints, self.noHints) + \
                 """
             }
         """
+
         if not self.yesHints: # If no (yes) answers have been given yet.
-            query="""select * where { ?s a ?o .
-                                                BIND('http://www.w3.org/1999/02/22-rdf-syntax-ns#type' AS ?p) """+ \
-                                                helpers.addFilterSPARQL(noHints = self.noHints) +"""}"""
+             query=""" %s
+            select * where { ?s a ?o .
+                                BIND(<http://www.w3.org/1999/02/22-rdf-syntax-ns#type> AS ?p) """%('\n'.join(prefixes))+ \
+                                helpers.addFilterSPARQL(noHints = self.noHints) +"}"
         
         # print(query)
         results = self.api.queryKG(query)
-        subGraph = self.api.parseJSON(results, [['s', 'p', 'o'],['s', 'p1', 's1']])
+        subGraph = self.api.parseJSON(results, [['s', 'p', 'o']])
         self.subGraphs.append(subGraph)
         self.graph = subGraph
-        
+
+        # for spo in subGraph:
+        #     s,p,o = helpers.parseTriple(spo)
+        #     if p == 'sameAs':
+        #         print('same as is here!!!')

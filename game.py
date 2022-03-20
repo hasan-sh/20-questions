@@ -8,9 +8,8 @@ from bots.Answerer.bot import Answerer
 
 class Game:
     """
-Here the while loop that keeps the game going on is created. 
-The terminal state is when the number of questions asked exceeds the number of allowed questions specificed in util.constants
-"""
+    Runs a the game's while loop. The game terminates when the number of asked questions exceeds the QUESTIONS_LIMIT variable in constants.py
+    """
     def __init__(self, state=State(), nQuestions=constants.QUESTIONS_LIMIT, questioner=None, againstHuman = True): # TODO: load players dynamically.
         self.nQuestions = nQuestions
         self.state = state
@@ -19,6 +18,7 @@ The terminal state is when the number of questions asked exceeds the number of a
         self.againstHuman = againstHuman
         self.answerer = 'User' if self.againstHuman else Answerer()
 
+    # game loop
     def run(self):
         while self.state.questionsAsked < self.nQuestions:
             question = self.questioner.nextQuestion()
@@ -28,8 +28,10 @@ The terminal state is when the number of questions asked exceeds the number of a
                 return 1 # 1 indicates the bot has won. 
             if not question:
                 if self.againstHuman:
-                    print(self.state.yesHints[-1][0]['value'])
-                    return 1
+                    print('get last hint: ', self.state.yesHints)#[0]['value'])
+                    askAnswerer(self.state.yesHints[-1])
+                    break
+
                     # input(constants.EMPTY_KG)
                 else:
                     return 1
@@ -41,14 +43,14 @@ The terminal state is when the number of questions asked exceeds the number of a
                     # print(question)
                     triple = helpers.parseTriple(question)
                     (_, p, o) = triple
-                    question =  p + ' ' + o
-                    answer = input(question + '? (yes or no) ')
+                    readableQuestion =  p + ' ' + o
+                    answer = input(readableQuestion + '? (yes or no) ')
                 else:
                     answer = self.answerer.getAnswer(question)
 
                 if answer in constants.POSSIBLE_ANSWERS:
                     self.questioner.update(answer)
-                    self.state.update()
+                    self.state.update(question)
                 else: # Answerer bot will always return a possible answer.
                     print('Please either of {}'.format(constants.POSSIBLE_ANSWERS))
                     askAnswerer(question)

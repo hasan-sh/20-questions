@@ -8,6 +8,15 @@ import importlib
 #     o = triple[2].split('/')[-1]
 #     return (s, p, o)
 
+def parsePrefixes(triple):
+    ''' Retrieves all prefixes out of a single triple'''
+    result = ['#'.join(v.get('value').split('#')[:-1]) + '#'
+                if '#' in v.get('value')
+                else '/'.join(v.get('value').split('/')[:-1])+'/'
+                for v in triple if v.get('type') == 'uri']
+    return result if result else triple[0].get('value')
+
+
 def parseTriple(triple):
     ''' Makes a human readable string out of a single triple of URI's'''
     return [v.get('value').split('/')[-1].split('#')[-1] for v in triple]
@@ -27,25 +36,34 @@ def parseGraph(g):
 
 def addFilterSPARQL(yesHints = [], noHints = []):
     """
-    
+    Returns a string object consisting of all yesHints and noHints. Each time a question is asked, the string object is extended with the used (o,p)
+    The number of total hints is equal to the number of questions asked so far.
+
     """
     s = ''
-    for hint in yesHints: 
+    for hint in yesHints:
         (_, p, o) = hint
-        s += f"\nfilter (?p != <{p['value']}> || ?o != "
+        s += f"\nfilter (?p != {p['prefix_entity']} || ?o != "
         if o['type'] == "literal":
-            s += f"\"{o['value']}{o['xml:lang']}\")"
+            s += f"\"{o['value']}"
+            if o.get('xml:lang'): # only if there's lang we add it.
+                s += f"{o['xml:lang']}"
+            s += '". }}'
         else:
-            s += f"<{o['value']}>)"
-    
-    for hint in noHints: 
+            s += f"{o['prefix_entity']})"
+
+    for hint in noHints:
         (_, p, o) = hint
-        s += f"\nfilter not exists {{ ?s <{p['value']}> "
+        s += f"\nfilter not exists {{ ?s {p['prefix_entity']} "
         if o['type'] == "literal":
-            s += f"\"{o['value']}{o['xml:lang']}\" . }}"
+            s += f"\"{o['value']}"
+            if o.get('xml:lang'):
+                s += f"{o['xml:lang']}"
+            s += '". }'
         else:
-            s += f"<{o['value']}> . }}"
+            s += f"{o['prefix_entity']} . }}"
     return s
+
 
 def load_bot(name):
     """
@@ -55,50 +73,6 @@ def load_bot(name):
     module = importlib.import_module(path)
     bot = getattr(module, f'{name}Bot')
     return bot
-
-"""
-Q1:
-    gets the most common p o.
-Intermediate step:
-    choose the first one of p o combination = result1
-Q2:
-    gets the most common p1 o1 of the result1
-Final:
-    choose the first one of p1 o1 combination = final
-
-Final is chosen, pose "final" as a question.
-"""
-
-q1 = """
-SELECT distinct ?p ?o
-        (count(concat(str(?p), str(?o))) as ?poCount)
-WHERE {
-  ?s ?p ?o.
-}
-GROUP BY ?p ?o
-ORDER BY DESC (?poCount )
-limit 10000
-"""
-
-# qres = []
-# result1 = qres[0]
-
-# q2 = """
-# SELECT distinct {result[1]} {result[2]} 
-#         (count(concat(str({result[1]}), str({result[2]}))) as ?poCount)
-# WHERE {
-#   ?s {result[1]} {result[2]}.
-# }
-# GROUP BY {result[1]} {result[2]}
-# ORDER BY DESC (?poCount )
-# limit 10000
-# """
-
-# qres1 = []
-# final = qres1[0]
-
-
-# question = final[0] # Tada!!!
 
 
 # api = api.API()

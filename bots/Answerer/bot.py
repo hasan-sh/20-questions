@@ -11,21 +11,36 @@ class Answerer:
         # print('CHOSEN ENTITY: ', self.entity)
 
     def collectTriples(self, entity):
+        """
+        Gathers all triples that give information about the chosen entity.
+        """
+        # query ="""
+        #     select *
+        #     where {
+        #         {<%s> ?p ?o .}
+        #         UNION
+        #         {?s1 ?p1 <%s> .}
+        #     }
+        # """%(entity[0]['value'], entity[0]['value'])
+
         query ="""
-            select *
-            where {
-                {<%s> ?p ?o .}
-                UNION
-                {?s1 ?p1 <%s> .}
-            }
-        """%(entity[0]['value'], entity[0]['value'])
-        qres = self.api.queryKG(query)  
-        qres = self.api.parseJSON(qres, [['p','o'], ['p1','s1']])
+              select *
+              where {
+                <%s> ?p ?o .
+              }
+        """%(entity[0]['value'])
+        qres = self.api.queryKG(query)
+        # qres = self.api.parseJSON(qres, [['p','o'], ['p1','s1']])
+        qres = self.api.parseJSON(qres, [['p','o']])
         return qres
+
 
 
     def getAnswer(self, question):
         """
+        Fetches the answer to the question about the entity posed by the questioner,
+        by seeing if the chosen entity has a triple with po.
+
         Example: questionner("type human?")
                  answerer(does "type human" hold?)
         """
@@ -36,7 +51,7 @@ class Answerer:
             return 'no'
     
     def pickEntity(self):
-        # we pick something that has some type # some discussing needed#########
+        #  we pick something that has some type
         query ="""
         SELECT distinct ?s
             WHERE {
