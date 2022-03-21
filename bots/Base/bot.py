@@ -26,8 +26,16 @@ In addition all questions' triples are saved to history.s
     def nextQuestion(self):
         questions = self.getQuestions()
         if not questions:
+            print('NO questions', questions, self.state.graph)
             return False
+        questions = [q for q in questions if q]
         triple = random.choice(questions)
+        # getRandom = lambda: random.choice(questions)
+        # triple = getRandom()
+        # while not triple:
+        #     print("NO CHOICE, generate another triple!")
+        #     triple = getRandom()
+        #     print('Chose: ', triple)
         self.history.append(triple)
         return triple
 
