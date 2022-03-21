@@ -14,6 +14,7 @@ class Game:
         self.nQuestions = nQuestions
         self.state = state
         # Players: [Questioner, Answerer]
+        # print('ques', questioner.nextQuestion)
         self.questioner = questioner or BaseBot(self.state)
         self.againstHuman = againstHuman
         self.answerer = 'User' if self.againstHuman else Answerer()
@@ -25,17 +26,38 @@ class Game:
             if self.state.foundAnswer:
                 s, _, o = helpers.parseTriple(self.state.foundAnswer)
                 print("It is "+ o)
+                print(f'Witin {self.state.questionsAsked}')
                 return 1 # 1 indicates the bot has won. 
             if not question:
+                # print("THE QUESTION: ", question)
                 if self.againstHuman:
-                    print('get last hint: ', self.state.yesHints)#[0]['value'])
-                    askAnswerer(self.state.yesHints[-1])
-                    break
-
+                    # print('get last hint: ', self.state.yesHints)#[0]['value'])
+                    print( ' No more info ... ')
+                    if self.state.yesHints:
+                        # askAnswerer(self.state.yesHints[-1])
+                        s, _, _ = self.state.yesHints[-1]
+                        answer = input(f'I think it is {helpers.createLabel(s)}, is it correct?')
+                        if answer in constants.POSSIBLE_ANSWERS:
+                            if answer == 'yes':
+                                return 1
+                            else: 
+                                print('I lost, fuck my life!')
+                                return 0
+                    else:
+                        print('I lost, fuck my life!')
+                        return 0
+                    # s, p, o = self.state.yesHints[-1]
+                    # askAnswerer([o, '', s])
+                    # answer = input(f'I think it is {s}, is it correct?')
+                    # if answer in constants.POSSIBLE_ANSWERS:
+                    #     if answer == 'yes':
+                    # print('Break out..')
+                    # break
                     # input(constants.EMPTY_KG)
                 else:
-                    return 1
-                break # TODO: don't break but change the logic based on user's input!
+                    print('I lost, no more info!')
+                    return 0
+                # break # TODO: don't break but change the logic based on user's input!
             # answer = input('Is it {}'.format(question))
 
             def askAnswerer(question):
@@ -55,6 +77,7 @@ class Game:
                     print('Please either of {}'.format(constants.POSSIBLE_ANSWERS))
                     askAnswerer(question)
             askAnswerer(question)
+        print('Questions limit reached, we lost!' + str(self.state.questionsAsked))
         return 0 # 0 indicates the bot has lost. 
         
 
