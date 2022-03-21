@@ -1,5 +1,7 @@
+import re
 from SPARQLWrapper import SPARQLWrapper, JSON, SPARQLExceptions
 from util import constants, helpers
+# import constants, helpers
 
 class API(SPARQLWrapper):
     def __init__(self) -> None:
@@ -8,8 +10,6 @@ class API(SPARQLWrapper):
         self.prefixes = {}
 
     def addPrefix(self, prefix):
-        # print(len(keys), prefix)
-        # print(self._prefixes)
         i = len(self._prefixes.keys())
         if self._prefixes.get(prefix):
             i = self._prefixes[prefix][1]
@@ -51,20 +51,38 @@ class API(SPARQLWrapper):
                     spo = []
                     for i in range(len(keys)):
                         key = result[keys[i]]
-                        if i == 0 and 'schema' in key['value']:
-                            break
+                        if 's' in keys[i] and 'schema' in key['value']: # only if the subject is from schema; this is because the subject here binds the p and o.
+                           break
                         spo.append(key)
-                    # spo = [result[keys[i]] for i in range(len(keys)) if i == 0 and not ('schemas' in result[keys[i]]['value'])]
-                    # if p is comment remove
-                    # spo before: {type, value }
                     for x in spo:
-                       # sPrefix, pPrefix, oPrefix
-                        x['prefix'] = helpers.parsePrefixes([x])[0]
-                        x['value'] = helpers.parseTriple([x])[0]
-                        self.addPrefix(x['prefix'])
-                        pref = self._prefixes[x['prefix']][0] + str(self._prefixes[x['prefix']][1])
-                        x['prefix_entity'] = f"{pref}:{x['value']}"
+                        x['uri'] = x['value']
+                        if x['type'] != 'literal': # add prefixes only for non literals.
+                            # if ("'" or "-") in x['value']: # some characters shouldn't be escaped, take full URI instead
+                            value = helpers.parseTriple([x])
+                            if re.search(r"[', -]", value[0]): # some characters shouldn't be escaped, take full URI instead
+                                x['prefix_entity'] = f"<{x['uri']}>"
+                            else:
+                                x['prefix'] = helpers.parsePrefixes([x])[0]
+                                self.addPrefix(x['prefix'])
+                                x['value'] = value[0]
+                                pref = self._prefixes[x['prefix']][0] + str(self._prefixes[x['prefix']][1])
+                                x['prefix_entity'] = f"{pref}:{helpers.escapeCharacters(x['value'])}"
                     # spo after: {type, value, prefix}
                     output.append(spo)
                     # print(spo)
         return output
+
+
+# api = API()
+
+# query ="""
+#         select *
+#         where {
+#         <http://yago-knowledge.org/resource/Kadapa_district> ?p ?o .
+#         }
+# """
+# qres = api.queryKG(query)
+# print('first qeury ', qres, '\n')
+# # qres = self.api.parseJSON(qres, [['p','o'], ['p1','s1']])
+# qres = api.parseJSON(qres, [['p','o']])
+# print('after parsing ', qres)
