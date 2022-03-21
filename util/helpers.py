@@ -1,4 +1,5 @@
 import importlib
+import re, string
 # import api
 
 # def parseTriple(triple):
@@ -8,13 +9,21 @@ import importlib
 #     o = triple[2].split('/')[-1]
 #     return (s, p, o)
 
+def createLabel(s):
+    return s['value'].replace('_',' ')
+    
+def escapeCharacters(s):
+    return re.sub(r"([%s])"%(string.punctuation.replace(":", "")),    r"\\\1", s)
+
 def parsePrefixes(triple):
     ''' Retrieves all prefixes out of a single triple'''
     result = ['#'.join(v.get('value').split('#')[:-1]) + '#'
                 if '#' in v.get('value')
                 else '/'.join(v.get('value').split('/')[:-1])+'/'
                 for v in triple if v.get('type') == 'uri']
-    return result if result else triple[0].get('value')
+    if not result:
+        print(result, triple)
+    return result#if result else triple[0].get('value')
 
 
 def parseTriple(triple):
@@ -45,10 +54,10 @@ def addFilterSPARQL(yesHints = [], noHints = []):
         (_, p, o) = hint
         s += f"\nfilter (?p != {p['prefix_entity']} || ?o != "
         if o['type'] == "literal":
-            s += f"\"{o['value']}"
+            s += f"\"{o['value']}\""
             if o.get('xml:lang'): # only if there's lang we add it.
-                s += f"{o['xml:lang']}"
-            s += '". }}'
+                s += f"@{o['xml:lang']}"
+            s += '. }}'
         else:
             s += f"{o['prefix_entity']})"
 
@@ -56,10 +65,10 @@ def addFilterSPARQL(yesHints = [], noHints = []):
         (_, p, o) = hint
         s += f"\nfilter not exists {{ ?s {p['prefix_entity']} "
         if o['type'] == "literal":
-            s += f"\"{o['value']}"
+            s += f"\"{o['value']}\""
             if o.get('xml:lang'):
-                s += f"{o['xml:lang']}"
-            s += '". }'
+                s += f"@{o['xml:lang']}"
+            s += '. }'
         else:
             s += f"{o['prefix_entity']} . }}"
     return s
