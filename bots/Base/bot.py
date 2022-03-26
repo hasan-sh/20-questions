@@ -49,27 +49,6 @@ In addition all questions' triples are saved to history.s
         # select possible properties
         return graph
 
-    def rescursive_query(self, p, o, depth=0):
-        query = f"""
-        SELECT distinct {p} {o} 
-                (count(concat(str({p}), str({o}))) as ?poCount)
-        WHERE {{
-        ?s {p} {o}.
-        }}
-        GROUP BY {p} {o}
-        ORDER BY DESC (?poCount )
-        limit 10000
-        """
-        # make query
-        # select result
-        qres = self.state.api.queryKG(query=query)
-        qres = self.state.api.parseJSON(qres, ["s"])
-        result = qres[0]
-        if depth > 0:
-            return self.rescursive_query(result[0]['value'], result[1]['value'], depth-1)
-        return result
-
-
     def update(self, answer):
         self.state.updateGraph(self.history[-1], answer)
 
