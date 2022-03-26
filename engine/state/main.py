@@ -7,10 +7,10 @@ TODO: Document
 class State:
     def __init__(self, depth=0):
         self.api = api.API()
+        # TODO: only initialize the graph if needed (does the questioner allow it?!)
         results = self.api.queryKG()
-        # results = helpers.rescursive_query('?p', '?o', self.api)
-        # print('first results ', results)
         self.graph = self.api.parseJSON(results)
+        # self.graph = []
         self.subGraphs = []
         self.currentDepth = depth
         self.yesHints = []
@@ -21,19 +21,9 @@ class State:
         self._prefixes = {}
 
       # update the state of the game.
-    def update(self, question):
+    def update(self, question, answer):
         self.questionsAsked += 1
-        prefixes = helpers.parsePrefixes(question)
-        for prefix in prefixes:
-            self._prefixes[prefix] = True
 
-    # Updates graph each time an answer is given
-
-    def updateGraph(self, question, answer):
-        # algorithm for updating the 
-        # ...
-        #
-        # print("You said {}".format(answer))
         answer = answer.lower()
         if answer == 'yes':
             # update graph. Save the p,o into a list
@@ -47,6 +37,13 @@ class State:
         elif answer == 'no':
             self.noHints.append(question)
 
+    # Updates graph each time an answer is given
+
+    def updateGraph(self, question, answer):
+        # algorithm for updating the 
+        # ...
+        #
+        # print("You said {}".format(answer))
         self.createSubGraph()
 
     def createSubGraph(self):

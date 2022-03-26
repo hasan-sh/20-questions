@@ -14,8 +14,12 @@ class Game:
         self.nQuestions = nQuestions
         self.state = state
         # Players: [Questioner, Answerer]
-        # print('ques', questioner.nextQuestion)
-        self.questioner = questioner or BaseBot(self.state)
+        if questioner:
+            bot = helpers.load_bot(questioner)
+            self.questioner = bot(self.state)
+        else:
+            self.questioner = BaseBot(self.state)
+        # print('questioner', self.questioner.nextQuestion)
         self.againstHuman = againstHuman
         self.answerer = 'User' if self.againstHuman else Answerer()
 
@@ -41,10 +45,10 @@ class Game:
                             if answer == 'yes':
                                 return 1
                             else: 
-                                print('I lost, fuck my life!')
+                                print('I lost!')
                                 return 0
                     else:
-                        print('I lost, fuck my life!')
+                        print('I lost!')
                         return 0
                     # s, p, o = self.state.yesHints[-1]
                     # askAnswerer([o, '', s])
@@ -71,8 +75,8 @@ class Game:
                     answer = self.answerer.getAnswer(question)
 
                 if answer in constants.POSSIBLE_ANSWERS:
+                    self.state.update(question, answer)
                     self.questioner.update(answer)
-                    self.state.update(question)
                 else: # Answerer bot will always return a possible answer.
                     print('Please either of {}'.format(constants.POSSIBLE_ANSWERS))
                     askAnswerer(question)
