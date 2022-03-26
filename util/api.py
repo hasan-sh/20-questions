@@ -1,4 +1,5 @@
 import re
+import sys
 from SPARQLWrapper import SPARQLWrapper, JSON, SPARQLExceptions
 from util import constants, helpers
 # import constants, helpers
@@ -8,6 +9,7 @@ class API(SPARQLWrapper):
         super().__init__(constants.URL)
         self._prefixes = {}
         self.prefixes = {}
+        self.memory = {}
 
     def addPrefix(self, prefix):
         i = len(self._prefixes.keys())
@@ -15,17 +17,6 @@ class API(SPARQLWrapper):
             i = self._prefixes[prefix][1]
         self._prefixes[prefix] = ('x', i)
         self.prefixes = [f'PREFIX {x + str(i)}: <{prefix}>' for (prefix, (x, i)) in self._prefixes.items()]
-
-    def queryTest(self, query):
-        try:
-            self.setQuery(query)
-            self.setReturnFormat(JSON)
-            results = self.query().convert()
-        except:# SPARQLExceptions.QueryBadFormed as e :
-            # e = sys.exc_info()[0]
-            # print('ERROR: ', e)
-            return {'results': {'bindings': []}}
-        return results
 
     # by default we select all entities of type ?o. You can pass a query to change this behaviour.
     def queryKG(self, query="""select * where { ?s a ?o .
@@ -36,8 +27,9 @@ class API(SPARQLWrapper):
             self.setReturnFormat(JSON)
             results = self.query().convert()
         except:# SPARQLExceptions.QueryBadFormed as e :
-            # e = sys.exc_info()[0]
-            # print('ERROR: ', e)
+            e = sys.exc_info()[0]
+            print('ERROR: ', e)
+            print(query)
             return {'results': {'bindings': []}}
         return results
         
@@ -65,14 +57,25 @@ class API(SPARQLWrapper):
                                 x['prefix'] = helpers.parsePrefixes([x])[0]
                                 self.addPrefix(x['prefix'])
                                 x['value'] = value[0]
-                                pref = self._prefixes[x['prefix']][0] + str(self._prefixes[x['prefix']][1])
+                                pref = self._prefixes[x['prefix']][0] + str(self._prefixes[x['prefix']][1]) # [0] gives the prefix, and [1] its count.
                                 x['prefix_entity'] = f"{pref}:{helpers.escapeCharacters(x['value'])}"
+                        elif x.get('xml:lang'):
+                            x['prefix_entity'] = f"'{x['value']}'@{x['xml:lang']}"
+                        else: 
+                            x['prefix_entity'] = f"'{x['value']}'"
                     # spo after: {type, value, prefix}
+                    # if not spo:
+                    #     print('NO SPO TO BE ADDED ', variables, '\n', result)
                     output.append(spo)
                     # print(spo)
+        # if not output:
+        #     print('NOTHING FOUND ', variables, '\n', results)
         return output
 
 
+# a = API()
+# print(helpers.getCurrentCount(a,[]))
+# print(helpers.rescursive_query([],a))
 # api = API()
 
 # query ="""

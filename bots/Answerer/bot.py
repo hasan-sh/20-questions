@@ -7,6 +7,10 @@ class Answerer:
         # The answerer thinks of an entity.
         self.api = api.API()
         self.entity = self.pickEntity()
+        # self.entity = [{
+        #   "type": "uri",
+        #   "uri": "http://yago-knowledge.org/resource/The_Matrix"
+        # }]
         while not self.entity:
             self.entity = self.pickEntity()
         result = self.collectTriples(self.entity)
@@ -54,6 +58,7 @@ class Answerer:
         query ="""
         SELECT distinct ?s
             WHERE {
+                ?s a ?_.
                 ?s <http://www.w3.org/2000/01/rdf-schema#label> ?__.
             }
         """
