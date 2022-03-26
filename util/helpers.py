@@ -1,6 +1,9 @@
 import importlib
 import re, string
-# import api
+from reprlib import recursive_repr
+import numpy as np
+from matplotlib.pyplot import hist
+import random
 
 # def parseTriple(triple):
 #     ''' Makes a human readable string out of a single triple of URI's'''
@@ -22,12 +25,14 @@ def parsePrefixes(triple):
                 else '/'.join(v.get('value').split('/')[:-1])+'/'
                 for v in triple if v.get('type') == 'uri']
     if not result:
-        print(result, triple)
+        print('NO result', result, triple)
     return result#if result else triple[0].get('value')
 
 
 def parseTriple(triple):
     ''' Makes a human readable string out of a single triple of URI's'''
+    if type(triple) == 'tuple':    
+        print(triple)
     return [v.get('value').split('/')[-1].split('#')[-1] for v in triple]
 
 
@@ -87,24 +92,65 @@ def load_bot(name):
 # api = api.API()
 # this is a first step to entropy
 # However, this actually finds the most common p o combinations, recursively
-def rescursive_query(p, o, api, depth=0):
+
+# rescursive_query([Hisham, a, Human])
+def rescursiveQuery(state, split=0.5, depth=0):
+    api = state.api
+    prefixes = '\n'.join(api.prefixes)
     query = f"""
-    SELECT distinct {p} {o} 
-            (count(concat(str({p}), str({o}))) as ?poCount)
+    {prefixes}
+    SELECT distinct ?p ?o 
+            (count(?s) as ?poCount)
     WHERE {{
-    ?s {p} {o}.
+    ?s ?p ?o ;
+        {';'.join([" {} {}".format(p['prefix_entity'], o['prefix_entity']) for (_, p, o) in state.yesHints])} .
+        {addFilterSPARQL(yesHints=state.yesHints, noHints=state.noHints)}    
     }}
-    GROUP BY {p} {o}
-    ORDER BY DESC (?poCount )
-    limit 10000
+    GROUP BY ?p ?o
+    ORDER BY DESC (?poCount)
     """
-    # make query
-    # select result
-    # print('before' , query)
-    qres = api.queryTest(query=query)
-    qres = api.parseJSON(qres, [['p', 'o', '?poCount']])
-    # print(qres)
-    result = qres[0]
+    if not state.yesHints:
+        query = f"""
+        {prefixes}
+        SELECT distinct ?p ?o (count(?s) as ?poCount)
+        WHERE {{?s ?p ?o .
+        {addFilterSPARQL(noHints=state.noHints)} }}
+        GROUP BY ?p ?o
+        having(?poCount > 10) 
+        ORDER BY DESC (?poCount)
+        """
+    qres = api.queryKG(query=query)
+    qres = api.parseJSON(qres, [['poCount', 'p', 'o']])
+    result = qres # select based on the split
+    totalCount = getCurrentCount(state, api)
+    a = np.array([int(x[0]['value']) for x in result])
+    if np.all(a == 1): # This means that the bot found one specific subject, and there is only one label!
+        labels = list(filter(lambda x: x[1]['value'] == 'label', qres))
+        print('Found only labels!', query)
+        return random.choice(labels)
+    # print('count ', totalCount )
+    
+    best = min(qres, key=lambda x: abs(int(x[0]['value']) - int(totalCount) * split))
     if depth > 0:
-        return  rescursive_query(result[0]['value'], result[1]['value'], depth-1)
-    return result
+        return  rescursiveQuery(state.yesHints, depth-1)#result[0]['value'], result[1]['value'], depth-1)
+    return best
+
+def getCurrentCount(state, api):
+    prefixes = '\n'.join(api.prefixes)
+    query = f"""
+    {prefixes}
+
+    SELECT (count(?s) as ?TotalCount)
+    WHERE {{
+    ?s {';'.join([" {} {}".format(p['prefix_entity'], o['prefix_entity']) for (_, p, o) in state.yesHints])} .
+    }}
+    """
+    
+    if not state.yesHints:
+        query = f"""
+        SELECT (count(?s) as ?TotalCount)
+        WHERE {{?s ?p ?o .}}
+        """
+    qres = api.queryKG(query=query)
+    qres = api.parseJSON(qres, [['TotalCount']])
+    return qres[0][0]['value']
