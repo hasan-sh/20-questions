@@ -54,7 +54,7 @@ numGame = options.games
 
 dev = options.dev
 
-questioner = helpers.load_bot(options.questioner) if options.questioner else options.questioner
+questioner = options.questioner
 
 againstHuman = options.opponent == True
 
