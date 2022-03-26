@@ -3,15 +3,16 @@
 - bot vs human: needed?
 """
 
+# from asyncio import constants
 import numpy as np
 from argparse import ArgumentParser
 
 from engine.state.main import State
 from game import Game
-from util import helpers
+from util import helpers, constants
 
 class Tournament:
-    def __init__(self, botName, repeat=10, questionLimit=10) -> None:
+    def __init__(self, botName, repeat=10, questionLimit=constants.QUESTIONS_LIMIT) -> None:
         self.botName = botName
         self.repeat = repeat
         self.questionLimit = questionLimit
@@ -39,9 +40,7 @@ class Tournament:
         for i in range(self.repeat):
             print(f'Playing game #{i+1}')
             state = State()
-            bot = helpers.load_bot(self.botName)
-            questioner = bot(state)
-            game = Game(state=state, nQuestions=self.questionLimit, questioner=questioner, againstHuman=False)
+            game = Game(state=state, nQuestions=self.questionLimit, questioner=self.botName, againstHuman=False)
             winner = game.run()
             winners = np.append(winners, [winner])
             questionsAsked = np.append(questionsAsked, [state.questionsAsked])
@@ -65,14 +64,17 @@ class Tournament:
         Average number of asked questions {round(np.mean(questionsAsked))} out of {self.questionLimit}.\n \
         Std: {np.std(questionsAsked)}. \n \
         Number of asked questions in the best game {round(bestGame)} out of {self.questionLimit} \n ")
-        self.saveStats(toFile=True)
+        self.saveStats(toFile=False)
 
-    def saveStats(self, toFile=False):
-        if toFile == True:
+    def saveStats(self, toFile=False, short=True):
+        if toFile:
             with open('tournament_output.txt','w') as data: 
                 data.write(str(self.stats))
         else:
-            print(self.stats)
+            if short:
+                return
+            else:
+                print(self.stats)
         
 
 
@@ -94,6 +96,6 @@ repeat = options.repeat
 player = options.player
 
 if __name__ == '__main__':
-
+    # print('Tournament: ', player)
     tournament = Tournament(player, repeat)
     tournament.run()
