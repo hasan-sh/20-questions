@@ -1,10 +1,36 @@
 from tkinter.messagebox import YES
 from util import helpers, api, constants
 import random
+
 class Answerer:
+    """
+    The Class representing the Answerer in case there is no human player.
+    
+    Attributes
+    ----------
+    ignoranceLevel : int
+        a number from 0 - 100 representing how much this bot knows about the chosen entity.
+        0 --> Answerer bot knows everything about the entity that it can find in the KG.
+        50 --> There's 50% chance that the answer could be picked randomly. 
+        100 --> Answerer bot knows nothing about the entity. Answer would be picked randomly.
+        
+    Methods
+    -------
+    collectTriples(entity)
+        Gathers all the triples from the KG about the chosen entity.
+        
+    getAnswer(question)
+        Using the question posed by a questioner bot, finds whether the chosen entity has a certain property.
+        Returns yes if it can find a triple that confirms that the chosen entity has the property from the 
+        question, else returns no.
+        
+    pickEntity()
+        Queries the KG to randomly select an entity that has both a type and a label. 
+        This chosen entity will be used to answer the questions posed by the questioner bot.
+    """
+
     def __init__(self, ignoranceLevel = 0) -> None:
         self.ignoranceLevel = ignoranceLevel
-        # The answerer thinks of an entity.
         self.api = api.API()
         self.entity = self.pickEntity()
         # self.entity = [{
@@ -14,14 +40,22 @@ class Answerer:
         while not self.entity:
             self.entity = self.pickEntity()
         result = self.collectTriples(self.entity)
-        # print('the result ', result)        
-        self.entityTriples = [[row['uri'] for row in rows] for rows in result]
-        # self.entityTriples = self.collectTriples(self.entity)
+        self.entityTriples = self.collectTriples(self.entity)
         print('CHOSEN ENTITY: ', self.entity, '\n')
 
     def collectTriples(self, entity):
         """
-        Gathers all triples that give information about the chosen entity.
+        Gathers all the triples from the KG about the chosen entity.
+
+        Parameters
+        ----------
+        entity : str
+            The entity selected from the KG.
+
+        Returns
+        -------
+        qres
+           A list of predicate object pairs where the chosen entity is in the subject position. 
         """
         
         query ="""
@@ -32,29 +66,50 @@ class Answerer:
         """%(entity[0]['uri'])
         qres = self.api.queryKG(query)
         qres = self.api.parseJSON(qres, [['p','o']])
-        return qres
-
-
+        return [[row['uri'] for row in rows] for rows in qres]
 
     def getAnswer(self, question):
         """
-        Fetches the answer to the question about the entity posed by the questioner,
-        by seeing if the chosen entity has a triple with po.
-
+        Finds the answer to the question posed by the questioner bot.
+        
+        Parameters
+        ----------
+        question : str
+            The triple given by the questioner bot.
+            
+        Returns
+        -------
+        'yes' 
+            if the predicate/object combination is found in the list of triples about the chosen entity.
+        'no'
+            if the predicate/object combination is not found in the list of triples about the chosen entity.
+        
         Example: questionner("type human?")
                  answerer(does "type human" hold?)
         """
+        if self.ignoranceLevel > 0:
+            if random.randint(0,100) < self.ignoranceLevel:
+                if random.randint(0,100)%2 == 0:
+                    return 'yes'
+                else:
+                    return 'no'
         _, p, o = question
-        # print('the entities', self.entityTriples)
-        # print([p['uri'], o['uri']])
-        # input('sexy me!')
         if [p['uri'], o['uri']] in self.entityTriples:
             return 'yes'
         else:
             return 'no'
     
     def pickEntity(self):
-        #  we pick something that has some label
+        """
+        Queries the KG to randomly select an entity with a type and a label.
+
+        Parameters -> None
+
+        Returns
+        -------
+        entity
+            The URI of the entity selected by the Answerer bot. 
+        """
         query ="""
         SELECT distinct ?s
             WHERE {
