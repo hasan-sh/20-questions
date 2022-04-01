@@ -3,15 +3,38 @@ import random
 
 class BaseBot:
     """
-Base bot: This bot asks random questions from the KG. 
-If answer is yes:
-    1- A sparql query is constructed from the triple used to ask the question. All instances where the subject appears either as
-       subject or object (in the previous KG) are retrieved (through a UNION) and a new sub-KG is constructed from them.
-    2- the triple itself is removed along with all triples where the predicate and object matches. 
-If answer is no:
-    1- the triple itself is removed along with all triples where the predicate and object matches. 
-In addition all questions' triples are saved to history.s
-"""
+    The class representing the questioner bot Basebot. 
+    This bot asks random questions from the KG. 
+    If answer is yes:
+        1- A sparql query is constructed from the triple used to ask the question. All instances where the subject appears as
+        subject (in the previous KG) are retrieved and a new sub-KG is constructed from them.
+        2- the triple itself is removed along with all triples where the predicate and object matches. 
+    If answer is no:
+        1- All entities where the predicate object combination holds are filtered out. 
+    In addition all questions' triples are saved to history.s
+
+    Attributes
+    ----------
+    state : Class??
+        Contains all the informations about the current game state. 
+    depth : int
+        idk how to describe this ;-; --Help (default is 20) TODO
+    _name : str
+        The name of the bot.
+
+    Methods
+    -------
+    nextQuestion()
+        Picks a question to pose to the Answerer.
+    
+    getQuestions()
+        Fetches the current graph.
+    
+    update(answer)
+        Updates game state with the question and the provided answer. 
+        Calls state.updateGraph()
+    """
+
     _name = 'Base Bot'
 
     def __init__(self, state, depth=20):
@@ -24,31 +47,50 @@ In addition all questions' triples are saved to history.s
 
 
     def nextQuestion(self):
+        """
+        Picks a question to pose to the Answerer.
+
+        Parameters -> None
+
+        Returns
+        -------
+        triple
+            A randomly selected triple from the current knowledge graph.
+        """
         questions = self.getQuestions()
         if not questions:
             print('NO questions', questions, self.state.graph)
             return False
         questions = [q for q in questions if q]
         triple = random.choice(questions)
-        # getRandom = lambda: random.choice(questions)
-        # triple = getRandom()
-        # while not triple:
-        #     print("NO CHOICE, generate another triple!")
-        #     triple = getRandom()
-        #     print('Chose: ', triple)
         self.history.append(triple)
         return triple
 
     # TODO: what happens if g is empty?
     def getQuestions(self):
-        # return self.rescursive_query(self.state.yesHints[-1][1]['value'], 
-        #     self.state.yesHints[-1][2]['value'])
+        """
+        Fetches the current graph.
         
-        # all entities in state
+        Parameters -> None
+
+        Returns
+        -------
+        graph
+            The current game's graph.
+        """
         graph = self.state.graph
-        # select possible properties
         return graph
 
     def update(self, answer):
+        """
+        Updates the current game's graph by using the answerer's answer along with the question asked.
+        
+        Parameters
+        ----------
+        answer : str
+            A 'yes' or 'no' answer given by the answerer.
+
+        Returns -> None
+        """
         self.state.updateGraph(self.history[-1], answer)
 
