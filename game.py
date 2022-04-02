@@ -8,9 +8,13 @@ from bots.Answerer.bot import Answerer
 
 class Game:
     """
+        TODO: Document
+
+    """
+    """
     Runs a the game's while loop. The game terminates when the number of asked questions exceeds the QUESTIONS_LIMIT variable in constants.py
     """
-    def __init__(self, state=State(), nQuestions=constants.QUESTIONS_LIMIT, questioner=None, againstHuman = True): # TODO: load players dynamically.
+    def __init__(self, state=None, nQuestions=constants.QUESTIONS_LIMIT, questioner=None, againstHuman = True): # TODO: load players dynamically.
         self.nQuestions = nQuestions
         self.state = state
         # Players: [Questioner, Answerer]
@@ -19,26 +23,32 @@ class Game:
             self.questioner = bot(self.state)
         else:
             self.questioner = BaseBot(self.state)
-        # print('questioner', self.questioner.nextQuestion)
         self.againstHuman = againstHuman
         self.answerer = 'User' if self.againstHuman else Answerer()
 
     # game loop
     def run(self):
+        """
+        TODO: Document
+
+        """
         while self.state.questionsAsked < self.nQuestions:
             question = self.questioner.nextQuestion()
+            if self.againstHuman:
+                _,p,_ = question
+                while (p['value'] == 'sameAs') or (p['value'] == 'image'):
+                    question = self.questioner.nextQuestion()
+                    _,p,_ = question
             if self.state.foundAnswer:
                 s, _, o = helpers.parseTriple(self.state.foundAnswer)
                 print("It is "+ o)
-                print(f'Witin {self.state.questionsAsked}')
+                print(f'Within {self.state.questionsAsked}')
                 return 1 # 1 indicates the bot has won. 
+            
             if not question:
-                # print("THE QUESTION: ", question)
                 if self.againstHuman:
-                    # print('get last hint: ', self.state.yesHints)#[0]['value'])
                     print( ' No more info ... ')
                     if self.state.yesHints:
-                        # askAnswerer(self.state.yesHints[-1])
                         s, _, _ = self.state.yesHints[-1]
                         answer = input(f'I think it is {helpers.createLabel(s)}, is it correct?')
                         if answer in constants.POSSIBLE_ANSWERS:
@@ -50,23 +60,12 @@ class Game:
                     else:
                         print('I lost!')
                         return 0
-                    # s, p, o = self.state.yesHints[-1]
-                    # askAnswerer([o, '', s])
-                    # answer = input(f'I think it is {s}, is it correct?')
-                    # if answer in constants.POSSIBLE_ANSWERS:
-                    #     if answer == 'yes':
-                    # print('Break out..')
-                    # break
-                    # input(constants.EMPTY_KG)
                 else:
                     print('I lost, no more info!')
                     return 0
-                # break # TODO: don't break but change the logic based on user's input!
-            # answer = input('Is it {}'.format(question))
 
             def askAnswerer(question):
                 if self.againstHuman:
-                    # print(question)
                     triple = helpers.parseTriple(question)
                     (_, p, o) = triple
                     readableQuestion =  p + ' ' + o
@@ -76,6 +75,7 @@ class Game:
 
                 if answer in constants.POSSIBLE_ANSWERS:
                     self.state.update(question, answer)
+            
                     self.questioner.update(answer)
                 else: # Answerer bot will always return a possible answer.
                     print('Please either of {}'.format(constants.POSSIBLE_ANSWERS))
