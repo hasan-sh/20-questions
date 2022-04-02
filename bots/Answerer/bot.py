@@ -29,19 +29,20 @@ class Answerer:
         This chosen entity will be used to answer the questions posed by the questioner bot.
     """
 
-    def __init__(self, ignoranceLevel = 0) -> None:
+    def __init__(self, ignoranceLevel = 0):
         self.ignoranceLevel = ignoranceLevel
         self.api = api.API()
         self.entity = self.pickEntity()
         # self.entity = [{
         #   "type": "uri",
-        #   "uri": "http://yago-knowledge.org/resource/The_Matrix"
+        #   "uri": "http://yago-knowledge.org/resource/Donald_Trump"
         # }]
         while not self.entity:
             self.entity = self.pickEntity()
         result = self.collectTriples(self.entity)
-        self.entityTriples = self.collectTriples(self.entity)
+        self.entityTriples = [[row.get('uri') for row in rows] for rows in result]
         print('CHOSEN ENTITY: ', self.entity, '\n')
+        print('Number of entityTriples', len(self.entityTriples))
 
     def collectTriples(self, entity):
         """
@@ -63,10 +64,10 @@ class Answerer:
               where {
                 <%s> ?p ?o .
               }
-        """%(entity[0]['uri'])
+        """%(entity[0].get('uri'))
         qres = self.api.queryKG(query)
         qres = self.api.parseJSON(qres, [['p','o']])
-        return [[row['uri'] for row in rows] for rows in qres]
+        return qres
 
     def getAnswer(self, question):
         """
@@ -94,7 +95,9 @@ class Answerer:
                 else:
                     return 'no'
         _, p, o = question
-        if [p['uri'], o['uri']] in self.entityTriples:
+        
+        
+        if [p.get('uri'), o.get('uri')] in self.entityTriples:
             return 'yes'
         else:
             return 'no'

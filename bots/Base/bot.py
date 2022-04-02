@@ -34,7 +34,7 @@ class BaseBot:
         Updates game state with the question and the provided answer. 
         Calls state.updateGraph()
     """
-
+    
     _name = 'Base Bot'
 
     def __init__(self, state, depth=20):
@@ -63,10 +63,10 @@ class BaseBot:
             return False
         questions = [q for q in questions if q]
         triple = random.choice(questions)
+        
         self.history.append(triple)
         return triple
 
-    # TODO: what happens if g is empty?
     def getQuestions(self):
         """
         Fetches the current graph.
