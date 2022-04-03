@@ -7,11 +7,12 @@ class EntropyBot:
     """
     _name = 'Entropy Bot'
 
-    def __init__(self, state, split = 0.5, depth=20):
+    def __init__(self, state, split = 0.1, depth=20):
         self.state = state
         self.split = split
         self.depth = depth
         self.history = []
+        self.answer = 'Yes'
 
     def nextQuestion(self):
         """
@@ -21,7 +22,7 @@ class EntropyBot:
         # if not graph:
         #     return False
         # triple = self.bestQuestion(graph)
-        triple = helpers.rescursiveQuery(self.state, self.split)
+        triple = helpers.rescursiveQuery(self.state, self.split, lastKnownAnswer = self.answer)
         self.history.append(triple)
         return triple
 
@@ -29,7 +30,7 @@ class EntropyBot:
         """
         TODO documentation
         """
-        pass
+        self.answer = answer
         # self.state.updateGraph(self.history[-1], answer)
 
                                                               
