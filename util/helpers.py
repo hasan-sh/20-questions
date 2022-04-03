@@ -90,8 +90,8 @@ last_results = []
 
 def rescursiveQuery(state, split=0.5, depth=0, lastKnownAnswer = 'yes'):
     api = state.api
+    global last_results
     if lastKnownAnswer == 'no':
-        global last_results 
         last_results.pop(0)
         totalCount = getCurrentCount(state, api)
         best = min(last_results, key=lambda x: abs(int(x[0]['value']) - int(totalCount) * split))
@@ -130,10 +130,9 @@ def rescursiveQuery(state, split=0.5, depth=0, lastKnownAnswer = 'yes'):
         ORDER BY DESC (?poCount)
         """
     qres = api.parseJSON(qres, [['poCount', 'p', 'o']])
-    result = qres # select based on the split
     last_results = qres
     totalCount = getCurrentCount(state, api)
-    a = np.array([int(x[0]['value']) for x in result])
+    a = np.array([int(x[0]['value']) for x in last_results])
     if np.all(a == 1): # This means that the bot found one specific subject, and there is only one label!
         labels = list(filter(lambda x: x[1]['value'] == 'label', qres))
         return random.choice(labels)
