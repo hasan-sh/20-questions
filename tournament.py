@@ -87,9 +87,16 @@ parser.add_argument("-p", "--player",
                     help="The bot to play against the answerer (default: Base)",
                     default='Base')
 
+parser.add_argument("-url", "--repository-url",
+                    dest="url",
+                    help="URL of the repository to be used. (default: True.)",
+                    default="http://127.0.0.1:7200/repositories/top2021")
+
+
 options = parser.parse_args()
 repeat = options.repeat
 player = options.player
+constants.URL = options.url
 
 if __name__ == '__main__':
     tournament = Tournament(player, repeat)

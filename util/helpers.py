@@ -86,8 +86,16 @@ def load_bot(name):
     bot = getattr(module, f'{name}Bot')
     return bot
 
-def rescursiveQuery(state, split=0.5, depth=0):
+last_results = []
+
+def rescursiveQuery(state, split=0.5, depth=0, lastKnownAnswer = 'yes'):
     api = state.api
+    if lastKnownAnswer == 'no':
+        global last_results 
+        last_results.pop(0)
+        totalCount = getCurrentCount(state, api)
+        best = min(last_results, key=lambda x: abs(int(x[0]['value']) - int(totalCount) * split))
+        return best
     prefixes = '\n'.join(api.prefixes)
     query = f"""
     {prefixes}
@@ -123,15 +131,15 @@ def rescursiveQuery(state, split=0.5, depth=0):
         """
     qres = api.parseJSON(qres, [['poCount', 'p', 'o']])
     result = qres # select based on the split
+    last_results = qres
     totalCount = getCurrentCount(state, api)
     a = np.array([int(x[0]['value']) for x in result])
     if np.all(a == 1): # This means that the bot found one specific subject, and there is only one label!
         labels = list(filter(lambda x: x[1]['value'] == 'label', qres))
         return random.choice(labels)
-    
     best = min(qres, key=lambda x: abs(int(x[0]['value']) - int(totalCount) * split))
-    if depth > 0:
-        return  rescursiveQuery(state.yesHints, depth-1)#result[0]['value'], result[1]['value'], depth-1)
+    # if depth > 0:
+    #     return  rescursiveQuery(state.yesHints, depth-1)#result[0]['value'], result[1]['value'], depth-1)
     return best
 
 def getCurrentCount(state, api):
