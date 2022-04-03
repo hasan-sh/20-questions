@@ -18,6 +18,7 @@ class State:
         self.questionsAsked = 0
         self.foundAnswer = ''
         self._prefixes = {}
+        self.history = [] # last results
 
       # update the state of the game.
     def update(self, question, answer):

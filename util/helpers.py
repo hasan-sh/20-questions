@@ -1,8 +1,6 @@
 import importlib
 import re, string
-from reprlib import recursive_repr
 import numpy as np
-from matplotlib.pyplot import hist
 import random
 
 """
@@ -86,15 +84,13 @@ def load_bot(name):
     bot = getattr(module, f'{name}Bot')
     return bot
 
-last_results = []
 
 def rescursiveQuery(state, split=0.5, depth=0, lastKnownAnswer = 'yes'):
     api = state.api
-    global last_results
     if lastKnownAnswer == 'no':
-        last_results.pop(0)
+        state.history = [ x for x in state.history if x != state.noHints[-1]] # takes approximately 1 millisecond
         totalCount = getCurrentCount(state, api)
-        best = min(last_results, key=lambda x: abs(int(x[0]['value']) - int(totalCount) * split))
+        best = min(state.history, key=lambda x: abs(int(x[0]['value']) - int(totalCount) * split))
         return best
     prefixes = '\n'.join(api.prefixes)
     query = f"""
@@ -130,9 +126,9 @@ def rescursiveQuery(state, split=0.5, depth=0, lastKnownAnswer = 'yes'):
         ORDER BY DESC (?poCount)
         """
     qres = api.parseJSON(qres, [['poCount', 'p', 'o']])
-    last_results = qres
+    state.history = qres # select based on the split
     totalCount = getCurrentCount(state, api)
-    a = np.array([int(x[0]['value']) for x in last_results])
+    a = np.array([int(x[0]['value']) for x in state.history])
     if np.all(a == 1): # This means that the bot found one specific subject, and there is only one label!
         labels = list(filter(lambda x: x[1]['value'] == 'label', qres))
         return random.choice(labels)
