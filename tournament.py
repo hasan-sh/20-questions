@@ -1,8 +1,9 @@
+import pickle
 import numpy as np
 from argparse import ArgumentParser
 from engine.state.main import State
 from game import Game
-from util import constants
+from util import constants, helpers
 
 class Tournament:
     """
@@ -66,8 +67,10 @@ class Tournament:
 
         """
         if toFile:
-            with open('tournament_output.txt', 'a') as data: 
-                data.write(str(self.stats)+ '\n')
+            oldData = helpers.readPickleBack('tournament_output.pkl')
+            with open('tournament_output.pkl', 'wb') as file: 
+                pickle.dump(oldData, file)
+                pickle.dump(self.stats, file)
         else:
             if short:
                 return
