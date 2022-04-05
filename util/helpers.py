@@ -2,6 +2,7 @@ import importlib
 import re, string
 import numpy as np
 import random
+import pickle
 
 """
 TODO: Document
@@ -58,7 +59,7 @@ def addFilterSPARQL(yesHints = [], noHints = []):
             s += f"\"{o['value']}\""
             if o.get('xml:lang'): # only if there's lang we add it.
                 s += f"@{o['xml:lang']}"
-            s += '. }}'
+            s += ' )'
         else:
             s += f"{o['prefix_entity']})"
 
@@ -131,6 +132,9 @@ def rescursiveQuery(state, split=0.5, depth=0, lastKnownAnswer = 'yes'):
     a = np.array([int(x[0]['value']) for x in state.history])
     if np.all(a == 1): # This means that the bot found one specific subject, and there is only one label!
         labels = list(filter(lambda x: x[1]['value'] == 'label', qres))
+        # print('only labels', )
+        if not labels:
+            return []
         return random.choice(labels)
     best = min(qres, key=lambda x: abs(int(x[0]['value']) - int(totalCount) * split))
     # if depth > 0:
@@ -156,3 +160,16 @@ def getCurrentCount(state, api):
     qres = api.queryKG(query=query)
     qres = api.parseJSON(qres, [['TotalCount']])
     return qres[0][0]['value']
+
+def readPickleBack(filename):
+    a_file = open(filename, "rb")
+    objs = []
+    while 1:
+        try:
+            objs.append(pickle.load(a_file))
+        except EOFError:
+            break
+    return objs
+
+# a = readPickleBack('tournament_output.pkl')
+# print(a)
