@@ -46,52 +46,33 @@ class ScoringBot:
             select ?p ?o 
             where {{?s ?p ?o; 
                 {" {} {}".format(question[1]['prefix_entity'], question[2]['prefix_entity'])} .
-                       {helpers.addFilterSPARQL(yesHints = self.state.yesHints+self.state.noHints)}
                        }}
             GROUP BY ?p ?o
             """ if answer else """
             select ?p ?o
             where { ?s ?p ?o .}
-            
             """
-        # query = f"""
-        #     {prefixes}
-        #     select ?p ?o 
-        #     where {{?s ?p ?o; 
-        #             {" {} {}".format(question[1]['prefix_entity'], question[2]['prefix_entity'])} .
-        #                }}
-        #     GROUP BY ?p ?o
-        #     """ if answer else """
-        #     select ?p ?o
-        #     where { ?s ?p ?o .}
-        #     # groupby ?p ?o
-        #     """
         qres = self.api.queryKG(query=query)
         qres = self.api.parseJSON(qres, [[ 'p', 'o']])
 
         if answer == 'yes':
             for res in qres:
-                self.forwardIndex[ str(res[0]['uri'] + '()()' + res[1]['uri']) ] *= 10
-
+                try: self.forwardIndex[ str(res[0]['uri'] + '()()' + res[1]['uri']) ] *= 1000
+                except: pass
             # delete the entry for the yes questions
             self.forwardIndex.pop( str(question[1]['uri'] + '()()' + question[2]['uri']) )
             
-
         elif answer == 'no':
             for res in qres:
-                self.forwardIndex[ str(res[0]['uri'] + '()()' + res[1]['uri']) ] *= 0.1
-            
+                try: self.forwardIndex[ str(res[0]['uri'] + '()()' + res[1]['uri']) ] *= 0.001
+                except: pass        
             #  delete the entry (NOT all triples related) for the no question
             self.forwardIndex.pop( str(question[1]['uri'] + '()()' + question[2]['uri']) )
            
-
         else: # means we just started => intialize score
             for res in qres:
-                # print(res)
-                if str(res[0]['uri'] + '()()' + res[1]['uri']) in self.forwardIndex:
-                    self.forwardIndex[ str(res[0]['uri'] + '()()' + res[1]['uri']) ] += 1
-                else:
-                    self.forwardIndex[ str(res[0]['uri'] + '()()' + res[1]['uri']) ] = 1
+                try: self.forwardIndex[ str(res[0]['uri'] + '()()' + res[1]['uri']) ] += 1 # count
+                except: self.forwardIndex[ str(res[0]['uri'] + '()()' + res[1]['uri']) ] = 1 # else initialize
             # normalize the values in our index
             factor = 1.0/sum(self.forwardIndex.values())
             self.forwardIndex = {key:value*factor for key,value in self.forwardIndex.items()}
