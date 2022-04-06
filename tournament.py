@@ -31,7 +31,7 @@ class Tournament:
         winners = np.array([])
         for i in range(self.repeat):
             print(f'Playing game #{i+1}')
-            if self.botName == 'Entropy':
+            if self.botName == 'Entropy' or 'Scoring':
                 state = State(initializeState=False)
             else:
                 state = State()

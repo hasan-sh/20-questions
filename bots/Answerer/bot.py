@@ -29,15 +29,15 @@ class Answerer:
         This chosen entity will be used to answer the questions posed by the questioner bot.
     """
 
-    def __init__(self, ignoranceLevel = 0):
+    def __init__(self, ignoranceLevel = 0.1):
         self.ignoranceLevel = ignoranceLevel
         self.api = api.API()
-        self.entity = self.pickEntity()
-        # self.entity = [{
-        #   "type": "uri",
-        #   "uri": "http://yago-knowledge.org/resource/Taylor_Swift"
-        #   "uri": "http://yago-knowledge.org/resource/Borussia_Dortmund"
-        # }]
+        # self.entity = self.pickEntity()
+        self.entity = [{
+          "type": "uri",
+          "uri": "http://yago-knowledge.org/resource/Taylor_Swift"
+        #   "uri": "https://yago-knowledge.org/resource/Borussia_Dortmund"
+        }]
         while not self.entity:
             self.entity = self.pickEntity()
         result = self.collectTriples(self.entity)
