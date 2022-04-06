@@ -63,7 +63,7 @@ print('Initializing the game..')
 for i in range(numGame):
 
     print('Running the game..')
-    if questioner == 'Entropy':
+    if questioner == 'Entropy' or 'Scoring':
         game = Game(state=State(initializeState=False), questioner=questioner, againstHuman=againstHuman)
     else:
         game = Game(state=State(), questioner=questioner, againstHuman=againstHuman) # TODO: pass players through the CL (Isn't this already done)

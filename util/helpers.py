@@ -91,8 +91,9 @@ def rescursiveQuery(state, split=0.5, depth=0, lastKnownAnswer = 'yes'):
     if lastKnownAnswer == 'no':
         state.history = [ x for x in state.history if x != state.noHints[-1]] # takes approximately 1 millisecond
         totalCount = getCurrentCount(state, api)
-        best = min(state.history, key=lambda x: abs(int(x[0]['value']) - int(totalCount) * split))
-        return best
+        if state.history:
+            best = min(state.history, key=lambda x: abs(int(x[0]['value']) - int(totalCount) * split))
+            return best
     prefixes = '\n'.join(api.prefixes)
     query = f"""
     {prefixes}
@@ -170,6 +171,11 @@ def readPickleBack(filename):
         except EOFError:
             break
     return objs
+
+def convertKeyToURL(key):
+    po = key.split('()()')
+    # print(po)
+    return po[0], po[1]
 
 # a = readPickleBack('tournament_output.pkl')
 # print(a)
