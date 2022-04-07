@@ -1,6 +1,6 @@
 import re
 import sys
-from SPARQLWrapper import SPARQLWrapper, JSON, SPARQLExceptions
+from SPARQLWrapper import SPARQLWrapper, JSON, SPARQLExceptions, POST
 from util import constants, helpers
 
 class API(SPARQLWrapper):
@@ -35,6 +35,7 @@ class API(SPARQLWrapper):
         try:
             self.setQuery(query)
             self.setReturnFormat(JSON)
+            self.setMethod(POST)
             results = self.query().convert()
         except:# SPARQLExceptions.QueryBadFormed as e :
             e = sys.exc_info()[0]
@@ -70,7 +71,7 @@ class API(SPARQLWrapper):
                             if x['type'] != 'literal': # add prefixes only for non literals.
                                 # if ("'" or "-") in x['value']: # some characters shouldn't be escaped, take full URI instead
                                 value = helpers.parseTriple([x])
-                                if re.search(r"[', -]", value[0]): # some characters shouldn't be escaped, take full URI instead
+                                if re.search(r"[', - –]", value[0]): # some characters shouldn't be escaped, take full URI instead
                                     x['prefix_entity'] = f"<{x['uri']}>"
                                 else:
                                     x['prefix'] = helpers.parsePrefixes([x])[0]
@@ -79,10 +80,15 @@ class API(SPARQLWrapper):
                                     pref = self._prefixes[x['prefix']][0] + str(self._prefixes[x['prefix']][1]) # [0] gives the prefix, and [1] its count.
                                     x['prefix_entity'] = f"{pref}:{helpers.escapeCharacters(x['value'])}"
                             elif x.get('xml:lang'):
+                                x['value'] = re.sub(r"(['])", r"\\\1", x['value'])
                                 x['prefix_entity'] = f"'{x['value']}'@{x['xml:lang']}"
                             else:
                                 x['prefix_entity'] = f"'{x['value']}'"
                             
+                            # if "Demetrius (A Midsummer Night\\'s Dream)" in x['prefix_entity']:
+                            #     print('#############################',x)
+                            # if 'x6:Golden\_Globe\_Award\_for\_Best\_Actor\_–\_Motion\_Picture\_Musical\_or\_Comedy'in x['prefix_entity']:
+                            #     print('#############################',x)
                             self.memory[x['uri']] = x # update memory
                     output.append(spo)
         

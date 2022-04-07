@@ -35,6 +35,7 @@ class Answerer:
         self.entity = self.pickEntity()
         # self.entity = [{
         #   "type": "uri",
+        #   "uri": "http://yago-knowledge.org/resource/Taylor_Swift"
         #   "uri": "http://yago-knowledge.org/resource/Borussia_Dortmund"
         # }]
         while not self.entity:
@@ -88,13 +89,22 @@ class Answerer:
         Example: questionner("type human?")
                  answerer(does "type human" hold?)
         """
-        if self.ignoranceLevel > 0:
-            if random.randint(0,100) < self.ignoranceLevel:
-                if random.randint(0,100)%2 == 0:
-                    return 'yes'
-                else:
-                    return 'no'
         _, p, o = question
+        if p['value'] != 'label': # dont lie when it comes to labels
+            if self.ignoranceLevel > 0:
+                if random.randint(0,100) < self.ignoranceLevel*100:
+                    """ Here there can be two options either a random answer or just the wrong answer"""
+                    # print('this is random answer')
+                    # if random.randint(0,100)%2 == 0:
+                    #     return 'yes'
+                    # else:
+                    #     return 'no'
+
+                    # print('this is wrong answer')
+                    if [p.get('uri'), o.get('uri')] in self.entityTriples:
+                        return 'no'
+                    else:
+                        return 'yes'
         
         
         if [p.get('uri'), o.get('uri')] in self.entityTriples:
