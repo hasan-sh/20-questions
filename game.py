@@ -2,52 +2,87 @@
 
 from engine.state.main import State
 from util import helpers, constants
-from bots.Random.bot import RandomBot
+from bots.Base.bot import BaseBot
 from bots.Answerer.bot import Answerer
 
 
 class Game:
     """
-Here the while loop that keeps the game going on is created. 
-The terminal state is when the number of questions asked exceeds the number of allowed questions specificed in util.constants
-"""
-    def __init__(self, graph, nQuestions=constants.QUESTIONS_LIMIT, questioner=None, againstHuman = True): # TODO: load players dynamically.
-        self.graph = graph
-        self.nQuestions = nQuestions
-        self.state = State(self.graph)
-        # Players: [Questioner, Answerer]
-        self.questioner = questioner or RandomBot(self.state)
-        self.againstHuman = againstHuman
-        self.answerer = 'User' if self.againstHuman else Answerer(self.graph)
+        TODO: Document
 
+    """
+    """
+    Runs a the game's while loop. The game terminates when the number of asked questions exceeds the QUESTIONS_LIMIT variable in constants.py
+    """
+    def __init__(self, state=None, nQuestions=constants.QUESTIONS_LIMIT, questioner=None, againstHuman = True): # TODO: load players dynamically.
+        self.nQuestions = nQuestions
+        self.state = state
+        # Players: [Questioner, Answerer]
+        if questioner:
+            bot = helpers.load_bot(questioner)
+            self.questioner = bot(self.state)
+        else:
+            self.questioner = BaseBot(self.state)
+        self.againstHuman = againstHuman
+        self.answerer = 'User' if self.againstHuman else Answerer()
+
+    # game loop
     def run(self):
+        """
+        TODO: Document
+
+        """
         while self.state.questionsAsked < self.nQuestions:
             question = self.questioner.nextQuestion()
+            if self.againstHuman:
+                _,p,_ = question
+                while (p['value'] == 'sameAs') or (p['value'] == 'image'):
+                    question = self.questioner.nextQuestion()
+                    _,p,_ = question
             if self.state.foundAnswer:
-                _, _, o = helpers.parseTriple(self.state.foundAnswer)
+                s, _, o = helpers.parseTriple(self.state.foundAnswer)
                 print("It is "+ o)
-                break
+                print(f'Within {self.state.questionsAsked}')
+                return 1 # 1 indicates the bot has won. 
+            
             if not question:
-                input(constants.EMPTY_KG)
-                break # TODO: don't break but change the logic based on user's input!
-            # answer = input('Is it {}'.format(question))
+                if self.againstHuman:
+                    print( ' No more info ... ')
+                    if self.state.yesHints:
+                        s, _, _ = self.state.yesHints[-1]
+                        answer = input(f'I think it is {helpers.createLabel(s)}, is it correct?')
+                        if answer in constants.POSSIBLE_ANSWERS:
+                            if answer == 'yes':
+                                return 1
+                            else: 
+                                print('I lost!')
+                                return 0
+                    else:
+                        print('I lost!')
+                        return 0
+                else:
+                    print('I lost, no more info!')
+                    return 0
 
             def askAnswerer(question):
                 if self.againstHuman:
                     triple = helpers.parseTriple(question)
                     (_, p, o) = triple
-                    question =  p + ' ' + o
-                    answer = input(question + '? (yes or no) ')
+                    readableQuestion =  p + ' ' + o
+                    answer = input(readableQuestion + '? (yes or no) ')
                 else:
                     answer = self.answerer.getAnswer(question)
 
                 if answer in constants.POSSIBLE_ANSWERS:
+                    self.state.update(question, answer)
+            
                     self.questioner.update(answer)
-                    self.state.update()
                 else: # Answerer bot will always return a possible answer.
                     print('Please either of {}'.format(constants.POSSIBLE_ANSWERS))
                     askAnswerer(question)
             askAnswerer(question)
+        print('Questions limit reached, we lost!' + str(self.state.questionsAsked))
+        return 0 # 0 indicates the bot has lost. 
         
 
 
