@@ -14,9 +14,28 @@ Arguments:
 """
 class Tournament:
     """
-    TODO: Document
+    The Class managing tournaments and the information gathered with these tournaments. 
+    
+    Attributes
+    ----------
+    botName : str
+        The name of the questioner bot used.
+    
+    repeat : int
+        The amount of times a game is played (default=10).
+    
+    questionLimit : int
+        The amount of questions in which the bot has to guess the target entity.
 
+    Methods
+    -------
+    run()
+       Runs the amount of games specified by the repeat variable and reports the results of those games.
+
+    saveStats(toFile, short)
+        Saves the stats from the tournament to a file. 
     """
+
     def __init__(self, botName, repeat=10, questionLimit=constants.QUESTIONS_LIMIT):
         self.botName = botName
         self.repeat = repeat
@@ -31,8 +50,11 @@ class Tournament:
             
     def run(self):
         """
-        TODO: Document
+        Runs the amount of games specified by the repeat variable and reports the results of those games.
 
+        Parameters -> None
+
+        Returns -> None
         """
         questionsAsked = np.array([])
         winners = np.array([])
@@ -70,8 +92,17 @@ class Tournament:
 
     def saveStats(self, toFile=False, short=True):
         """
-        TODO: Document
+        Saves the stats from the tournament to a file. 
 
+        Parameters
+        ----------
+        toFile : Boolean
+            Determines whether the user wants the results of the tournament saved to a file or not (default=False).
+
+        short : Boolean
+            Determines whether the stats should be printed or not (default=True).
+
+        Returns -> None 
         """
         if toFile:
             oldData = helpers.readPickleBack('.\\20-questions\\tournament_output.pkl')
