@@ -1,6 +1,8 @@
 import heapq
 from util import helpers
 import matplotlib.pyplot as plt
+import numpy as np
+import random
 
 class ScoringBot:
     _name = 'Scoring Bot'
@@ -24,7 +26,19 @@ class ScoringBot:
         # self.state.updateGraph(self.history[-1], answer)
 
     def bestQuestion(self):
-        best = list(self.forwardIndex.keys())[list(self.forwardIndex.values()).index(max(self.forwardIndex.values()))]
+        # totalCount = sum(self.forwardIndex.values())
+        # entropy = min(self.forwardIndex.values(), key=lambda x: abs(int(x - int(totalCount) * 0.5)))
+        
+        # best = list(self.forwardIndex.keys())[list(self.forwardIndex.values()).index(entropy)]
+        
+        # this takes the highest score
+        highest = max(self.forwardIndex.values())
+        indices = [i for i, j in enumerate(self.forwardIndex.values()) if j == highest]
+        if len(indices) > 1: 
+            best = list(self.forwardIndex.keys())[random.choice(indices)]
+        else:
+            best = list(self.forwardIndex.keys())[indices[0]]
+
         p,o = helpers.convertKeyToURL(best)
         question = [{'value':'','type':'','uri':'','prefix':'','prefix_entity':''}, self.api.memory[str(p)], self.api.memory[str(o)]]
         
@@ -57,14 +71,14 @@ class ScoringBot:
 
         if answer == 'yes':
             for res in qres:
-                try: self.forwardIndex[ str(res[0]['uri'] + '()()' + res[1]['uri']) ] *= 1000
+                try: self.forwardIndex[ str(res[0]['uri'] + '()()' + res[1]['uri']) ] *= 100
                 except: pass
             # delete the entry for the yes questions
             self.forwardIndex.pop( str(question[1]['uri'] + '()()' + question[2]['uri']) )
             
         elif answer == 'no':
             for res in qres:
-                try: self.forwardIndex[ str(res[0]['uri'] + '()()' + res[1]['uri']) ] *= 0.001
+                try: self.forwardIndex[ str(res[0]['uri'] + '()()' + res[1]['uri']) ] *= 0.01
                 except: pass        
             #  delete the entry (NOT all triples related) for the no question
             self.forwardIndex.pop( str(question[1]['uri'] + '()()' + question[2]['uri']) )

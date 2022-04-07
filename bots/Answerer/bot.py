@@ -29,7 +29,7 @@ class Answerer:
         This chosen entity will be used to answer the questions posed by the questioner bot.
     """
 
-    def __init__(self, ignoranceLevel = 0.1):
+    def __init__(self, ignoranceLevel = 0.1, mode = 'easy'): # modes easy and hard
         self.ignoranceLevel = ignoranceLevel
         self.api = api.API()
         # self.entity = self.pickEntity()
@@ -42,6 +42,7 @@ class Answerer:
             self.entity = self.pickEntity()
         result = self.collectTriples(self.entity)
         self.entityTriples = [[row.get('uri') for row in rows] for rows in result]
+        self.mode = mode
         print('CHOSEN ENTITY: ', self.entity, '\n')
         print('Number of entityTriples', len(self.entityTriples))
 
@@ -94,17 +95,18 @@ class Answerer:
             if self.ignoranceLevel > 0:
                 if random.randint(0,100) < self.ignoranceLevel*100:
                     """ Here there can be two options either a random answer or just the wrong answer"""
-                    # print('this is random answer')
-                    # if random.randint(0,100)%2 == 0:
-                    #     return 'yes'
-                    # else:
-                    #     return 'no'
-
-                    # print('this is wrong answer')
-                    if [p.get('uri'), o.get('uri')] in self.entityTriples:
-                        return 'no'
-                    else:
-                        return 'yes'
+                    if self.mode == 'easy':
+                        # print('this is random answer')
+                        if random.randint(0,100)%2 == 0:
+                            return 'yes'
+                        else:
+                            return 'no'
+                    elif self.mode == 'hard':
+                        # print('this is wrong answer')
+                        if [p.get('uri'), o.get('uri')] in self.entityTriples:
+                            return 'no'
+                        else:
+                            return 'yes'
         
         
         if [p.get('uri'), o.get('uri')] in self.entityTriples:
