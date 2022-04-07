@@ -184,5 +184,27 @@ def readPickleBack(filename):
             break
     return objs
 
+def retrieveName(predicate, question, state):
+    api = state.api
+    object = question[2]
+    if predicate == 'givenName':
+        query = F""" select ?name  where {{ 
+        ?s <http://schema.org/givenName> <{object['uri']}>;
+            <http://www.w3.org/2000/01/rdf-schema#label> ?name.
+        }}"""
+    if predicate == 'samAs':
+        query = F""" select ?name  where {{ 
+        ?s <http://www.w3.org/2002/07/owl#sameAs> <{object['uri']}>;
+            <http://www.w3.org/2000/01/rdf-schema#label> ?name.
+        }}"""
+    if predicate == 'image':
+        query = F""" select ?name  where {{ 
+        ?s <http://schema.org/image> <{object['uri']}>;
+            <http://www.w3.org/2000/01/rdf-schema#label> ?name.
+        }}"""
+    qres = api.queryKG(query=query)
+    qres = api.parseJSON(qres, [['name']])
+    return qres[0][0].get('value')
+    
 # a = readPickleBack('tournament_output.pkl')
 # print(a)

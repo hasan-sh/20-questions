@@ -64,7 +64,7 @@ class State:
         if answer == 'yes':
             # update graph. Save the p,o into a list
             _, p, _ = helpers.parseTriple(question)
-            if p == 'label': # found it! 
+            if p  in ['label', 'image', 'givenName', 'sameAs']: # found it! 
                 self.foundAnswer = question
                 return
         

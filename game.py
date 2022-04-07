@@ -41,8 +41,15 @@ class Game:
                     question = self.questioner.nextQuestion()
                     _,p,_ = question
             if self.state.foundAnswer:
-                s, _, o = helpers.parseTriple(self.state.foundAnswer)
-                print("It is "+ o)
+                s, p, o = helpers.parseTriple(self.state.foundAnswer)
+                if p == 'label':
+                    print("It is "+ o)
+                elif p == 'image':
+                    print("It is "+ helpers.retrieveName(p, self.state.foundAnswer, self.state))
+                elif p == 'sameAs':
+                    print("It is "+ helpers.retrieveName(p, self.state.foundAnswer, self.state))
+                elif p == 'givenName':
+                    print("It is "+ helpers.retrieveName(p, self.state.foundAnswer, self.state))
                 print(f'Within {self.state.questionsAsked}')
                 return 1 # 1 indicates the bot has won. 
             

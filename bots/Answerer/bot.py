@@ -95,7 +95,7 @@ class Answerer:
                  answerer(does "type human" hold?)
         """
         _, p, o = question
-        if p['value'] != 'label': # dont lie when it comes to labels
+        if p['value'] not in ['label', 'image', 'givenName', 'sameAs']: # dont lie when it comes to labels
             if self.ignoranceLevel > 0:
                 if random.randint(0,100) < self.ignoranceLevel*100:
                     """ Here there can be two options either a random answer or just the wrong answer"""
