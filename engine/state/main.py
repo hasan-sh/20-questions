@@ -1,9 +1,30 @@
 from util import helpers, api
-"""
-TODO: Document
 
-"""
 class State:
+
+    """
+    The Class handling the updating of the game state. 
+    
+    Attributes
+    ----------
+    depth : int
+        --
+
+    initializeState : Boolean
+        Decides whether the state should be initialized, meaning that either the bot will start with the KG queried
+        on type or not. 
+
+    Methods
+    -------
+    update(question, answer)
+        Keeps track of the amount of questions asked and what questions are answered yes/no to, each time a question is asked. 
+
+    updateGraph()?
+
+    createSubGraph()
+        Minimize the graph each time an answer is given. This function makes use of yesHints and noHints to query the graph.
+
+    """
     def __init__(self, depth=0, initializeState = True):
         self.api = api.API()
         if not initializeState:
@@ -23,7 +44,18 @@ class State:
       # update the state of the game.
     def update(self, question, answer):
         """
-        TODO: Document
+        Keeps track of the amount of questions asked and what questions are answered yes/no to, each time a question is asked. 
+        If yes is answered to a question about a label, the question gets added to found answer. 
+
+        Parameters 
+        ----------
+        question : str
+            The triple of the question asked
+        
+        answer : str
+            A yes/no response to the question.
+
+        Returns -> None
 
         """
         self.questionsAsked += 1
@@ -44,18 +76,19 @@ class State:
 
     def updateGraph(self, question, answer):
         """
-        TODO: Document
+        TODO: Document ??
 
         """
         self.createSubGraph()
 
     def createSubGraph(self):
         """
-        TODO: Document
+        Minimizes the graph each time an answer is given. This function makes use of yesHints and noHints to query the graph.
+        If no yesAnswers have been given yet, it will limit the subGraph to types, while filtering out the rejected triples. 
 
-        """
-        """
-        Minimize the graph each time an answer is given. This function makes use of yesHints and noHints to query the graph.
+        Parameters -> None
+
+        Returns -> None
         """
         prefixes = self.api.prefixes # [f'PREFIX {x}: <{prefix}>' for (prefix, x) in self.api.prefixes.items()]
         query = """
