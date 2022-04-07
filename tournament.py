@@ -5,6 +5,15 @@ from engine.state.main import State
 from game import Game
 from util import constants, helpers
 
+"""
+Running this file in the command line will start the game. 
+Some additional arguments are provided for easier execution through the command line.
+Arguments:
+-r => repreat : int
+-p => which bot to play (Entropy, Base, Random)
+-url => to choose which dataset to use ( should be running on local server) 
+"""
+
 class Tournament:
     """
     TODO: Document
@@ -67,8 +76,8 @@ class Tournament:
 
         """
         if toFile:
-            oldData = helpers.readPickleBack('tournament_output.pkl')
-            with open('tournament_output.pkl', 'wb') as file: 
+            oldData = helpers.readPickleBack('.\\20-questions\\tournament_output.pkl')
+            with open('.\\20-questions\\tournament_output.pkl', 'wb') as file: 
                 pickle.dump(oldData, file)
                 pickle.dump(self.stats, file)
         else:

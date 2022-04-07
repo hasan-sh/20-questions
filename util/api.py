@@ -85,10 +85,6 @@ class API(SPARQLWrapper):
                             else:
                                 x['prefix_entity'] = f"'{x['value']}'"
                             
-                            # if "Demetrius (A Midsummer Night\\'s Dream)" in x['prefix_entity']:
-                            #     print('#############################',x)
-                            # if 'x6:Golden\_Globe\_Award\_for\_Best\_Actor\_–\_Motion\_Picture\_Musical\_or\_Comedy'in x['prefix_entity']:
-                            #     print('#############################',x)
                             self.memory[x['uri']] = x # update memory
                     output.append(spo)
         
