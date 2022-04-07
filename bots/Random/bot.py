@@ -10,7 +10,7 @@ class RandomBot:
 
     Attributes
     ----------
-    state : Class??
+    state : Class
         Contains all the informations about the current game state.
     depth : int
         idk how to describe this ;-; --Help (default is 20) TODO
@@ -68,9 +68,11 @@ class RandomBot:
 
 
     def update(self, answer):
-        # dummy bot that doesn't rely on the state.
-        # self.state.updateGraph Is the basic approach of updating the state.
-        # Any other approaches, can be appended here in this method.
+        """
+        random bot that doesn't rely on the state.
+        self.state.updateGraph Is the basic approach of updating the state.
+        Any other approaches, can be appended here in this method.
+        """
         pass
 
 

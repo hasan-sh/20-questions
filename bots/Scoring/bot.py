@@ -39,15 +39,14 @@ class ScoringBot:
         else:
             best = list(self.forwardIndex.keys())[indices[0]]
 
-        p,o = helpers.convertKeyToURL(best)
-        question = [{'value':'','type':'','uri':'','prefix':'','prefix_entity':''}, self.api.memory[str(p)], self.api.memory[str(o)]]
+        question = helpers.keyToQuestion(best, self.api)
+        # question = [{'value':'','type':'','uri':'','prefix':'','prefix_entity':''}, self.api.memory[str(p)], self.api.memory[str(o)]]
         
         # n = 1
         # while question in self.history:
         #     n += 1
         #     best = list(self.forwardIndex.keys())[list(self.forwardIndex.values()).index(min(heapq.nlargest(n, self.forwardIndex.values())))]
-        #     p,o = helpers.convertKeyToURL(best)
-        #     question = [{'value':'','type':'','uri':'','prefix':'','prefix_entity':''}, self.api.memory[str(p)], self.api.memory[str(o)]]
+        #     question = helpers.keyToQuestion(best)
         
         # print(question[1]['value'],question[2]['value'])
         
