@@ -9,9 +9,10 @@ from argparse import ArgumentParser
 Running this file in the command line will start the game. 
 Some additional arguments are provided for easier execution through the command line.
 Arguments:
--d => for development mode TODO WHAT IS THIS??
--n => for number of games TODO WHY SHOULD WE DO THIS??
--f => to choose which dataset to use 
+-q => which bot to play against (Entropy, Base, Random)
+-o => human opponent True or False
+-d => for development mode: when in development mode questions and answers are printed
+-url => to choose which dataset to use ( should be running on local server) 
 """
 """
     TODO: Document
@@ -33,39 +34,28 @@ parser.add_argument("-o", "--human-opponent",
 
 parser.add_argument("-d", "--development",
                     dest="dev",
-                    help="Development mode (default: True.)",
-                    default=True)
+                    help="Development mode (default: False)",
+                    default=False)
 
-parser.add_argument("-n", "--number-games",
-                    dest="games",
-                    help="Number of games to run (default: 1)",
-                    default=1)
-
-parser.add_argument("-r", "--repository-url",
+parser.add_argument("-url", "--repository-url",
                     dest="url",
-                    help="URL of the repository to be used. (default: True.)",
+                    help="URL of the repository to be used. (default: ... .)",
                     default="http://127.0.0.1:7200/repositories/top2021")
 
 options = parser.parse_args()
 
-
-numGame = options.games
-
-dev = options.dev
+dev = options.dev == 'True'
 
 questioner = options.questioner
 
-againstHuman = options.opponent == True
+againstHuman = options.opponent == 'True'
 
 constants.URL = options.url
 
-print('Initializing the game..')
-for i in range(numGame):
-
-    print('Running the game..')
-    if questioner == 'Entropy':
-        game = Game(state=State(initializeState=False), questioner=questioner, againstHuman=againstHuman)
-    else:
-        game = Game(state=State(), questioner=questioner, againstHuman=againstHuman) # TODO: pass players through the CL (Isn't this already done)
-    winner = game.run()
-    print("The winner ", winner)
+print('Running the game..')
+if questioner == 'Entropy':
+    game = Game(state=State(initializeState=False), questioner=questioner, againstHuman=againstHuman, devMode=dev)
+else:
+    game = Game(state=State(), questioner=questioner, againstHuman=againstHuman, devMode=dev)
+winner = game.run()
+print("The winner ", winner)

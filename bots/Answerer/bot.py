@@ -13,6 +13,10 @@ class Answerer:
         0 --> Answerer bot knows everything about the entity that it can find in the KG.
         50 --> There's 50% chance that the answer could be picked randomly. 
         100 --> Answerer bot knows nothing about the entity. Answer would be picked randomly.
+
+    mode: str
+        easy --> returns RANDOM answers according to the chance provided by the ignorance level 
+        hard --> returns WRONG answers according to the chance provided by the ignorance level
         
     Methods
     -------
@@ -107,7 +111,6 @@ class Answerer:
                             return 'no'
                         else:
                             return 'yes'
-        
         
         if [p.get('uri'), o.get('uri')] in self.entityTriples:
             return 'yes'

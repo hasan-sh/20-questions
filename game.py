@@ -14,7 +14,7 @@ class Game:
     """
     Runs a the game's while loop. The game terminates when the number of asked questions exceeds the QUESTIONS_LIMIT variable in constants.py
     """
-    def __init__(self, state=None, nQuestions=constants.QUESTIONS_LIMIT, questioner=None, againstHuman = True): # TODO: load players dynamically.
+    def __init__(self, state=None, nQuestions=constants.QUESTIONS_LIMIT, questioner=None, againstHuman = True, devMode = False): # TODO: load players dynamically.
         self.nQuestions = nQuestions
         self.state = state
         # Players: [Questioner, Answerer]
@@ -25,6 +25,7 @@ class Game:
             self.questioner = BaseBot(self.state)
         self.againstHuman = againstHuman
         self.answerer = 'User' if self.againstHuman else Answerer()
+        self.devMode = devMode
 
     # game loop
     def run(self):
@@ -72,11 +73,13 @@ class Game:
                     answer = input(readableQuestion + '? (yes or no) ')
                 else:
                     answer = self.answerer.getAnswer(question)
+                    if self.devMode == True:
+                        print('Question: ', " ".join(helpers.parseTriple(question)[1:]), '==> ', answer)
 
                 if answer in constants.POSSIBLE_ANSWERS:
                     self.state.update(question, answer)
-            
                     self.questioner.update(answer)
+                    
                 else: # Answerer bot will always return a possible answer.
                     print('Please either of {}'.format(constants.POSSIBLE_ANSWERS))
                     askAnswerer(question)

@@ -1,6 +1,5 @@
 import random
 
-
 class BaseBot:
     """
     The class representing the questioner bot Basebot. 
@@ -15,7 +14,7 @@ class BaseBot:
 
     Attributes
     ----------
-    state : Class??
+    state : Class
         Contains all the informations about the current game state. 
     depth : int
         idk how to describe this ;-; --Help (default is 20) TODO
@@ -34,17 +33,16 @@ class BaseBot:
         Updates game state with the question and the provided answer. 
         Calls state.updateGraph()
     """
-    
     _name = 'Base Bot'
 
     def __init__(self, state, depth=20):
         """
-        :param int depth: bllalaib
+        :param int depth: for now not used, meant to include the number of allowed questions within the strategy of the bot
+            TODO include this in the strategy
         """
         self.state = state
         self.depth = depth
         self.history = []
-
 
     def nextQuestion(self):
         """
