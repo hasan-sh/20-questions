@@ -1,7 +1,6 @@
-import heapq
 from util import helpers
-import matplotlib.pyplot as plt
 import numpy as np
+from collections import Counter
 import random
 
 class ScoringBot:
@@ -14,24 +13,24 @@ class ScoringBot:
         self.updateScore()
         self.history = []
         
-
     def nextQuestion(self):
         triple = self.bestQuestion()
         self.history.append(triple)
         return triple
 
     def update(self, answer): 
-        # print('updating with quesion', self.history[-1], 'and answer', answer)
         self.updateScore(question=self.history[-1],answer=answer)
-        # self.state.updateGraph(self.history[-1], answer)
 
     def bestQuestion(self):
         # totalCount = sum(self.forwardIndex.values())
         # entropy = min(self.forwardIndex.values(), key=lambda x: abs(int(x - int(totalCount) * 0.5)))
-        
         # best = list(self.forwardIndex.keys())[list(self.forwardIndex.values()).index(entropy)]
         
-        # this takes the highest score
+        # sums = dict(Counter(self.forwardIndex) + Counter(self.countIndex))
+        # means = {k: sums[k] / 2 for k in sums}
+        # highest = max(means.values())
+        # best = list(means.keys())[list(means.values()).index(highest)]
+
         highest = max(self.forwardIndex.values())
         indices = [i for i, j in enumerate(self.forwardIndex.values()) if j == highest]
         if len(indices) > 1: 
@@ -39,18 +38,9 @@ class ScoringBot:
         else:
             best = list(self.forwardIndex.keys())[indices[0]]
 
-        question = helpers.keyToQuestion(best, self.api)
-        # question = [{'value':'','type':'','uri':'','prefix':'','prefix_entity':''}, self.api.memory[str(p)], self.api.memory[str(o)]]
-        
-        # n = 1
-        # while question in self.history:
-        #     n += 1
-        #     best = list(self.forwardIndex.keys())[list(self.forwardIndex.values()).index(min(heapq.nlargest(n, self.forwardIndex.values())))]
-        #     question = helpers.keyToQuestion(best)
-        
-        # print(question[1]['value'],question[2]['value'])
-        
-        return question
+        # best = list(self.forwardIndex.keys())[list(self.forwardIndex.values()).index(highest)]
+
+        return helpers.keyToQuestion(best, self.api)
 
     def updateScore(self, question = None, answer = None):
         prefixes = '\n'.join(self.api.prefixes)
@@ -67,32 +57,29 @@ class ScoringBot:
             """
         qres = self.api.queryKG(query=query)
         qres = self.api.parseJSON(qres, [[ 'p', 'o']])
-
-        if answer == 'yes':
-            for res in qres:
-                try: self.forwardIndex[ str(res[0]['uri'] + '()()' + res[1]['uri']) ] *= 100
+        results = [str(res[0]['uri'] + '()()' + res[1]['uri']) for res in qres]
+        
+        if answer:
+            indexCopy = self.forwardIndex.keys()
+            for res in results:
+                try:
+                    self.forwardIndex[res] *= 250 if answer == 'yes' else 0.01
+                    indexCopy.remove(res)
                 except: pass
-            # delete the entry for the yes questions
-            self.forwardIndex.pop( str(question[1]['uri'] + '()()' + question[2]['uri']) )
-            
-        elif answer == 'no':
-            for res in qres:
-                try: self.forwardIndex[ str(res[0]['uri'] + '()()' + res[1]['uri']) ] *= 0.01
-                except: pass        
-            #  delete the entry (NOT all triples related) for the no question
+            for key in indexCopy:
+                self.forwardIndex[ key ] *= 0.5 if answer == 'yes' else 2
+            #  delete the entry of the asked question (to no ask it anymore)
             self.forwardIndex.pop( str(question[1]['uri'] + '()()' + question[2]['uri']) )
            
         else: # means we just started => intialize score
-            for res in qres:
-                try: self.forwardIndex[ str(res[0]['uri'] + '()()' + res[1]['uri']) ] += 1 # count
-                except: self.forwardIndex[ str(res[0]['uri'] + '()()' + res[1]['uri']) ] = 1 # else initialize
-            # normalize the values in our index
-            factor = 1.0/sum(self.forwardIndex.values())
-            self.forwardIndex = {key:value*factor for key,value in self.forwardIndex.items()}
-        
-        # if self.state.questionsAsked > 20:
-            # plt.hist(self.forwardIndex.values(),   bins=0.001)
-            # plt.show()
-        # print(self.forwardIndex['labelTaylor Swift'])
+            for res in results:
+                try: self.forwardIndex[res] += 1 # count
+                except: self.forwardIndex[res] = 1 # else initialize
+            ## normalize the values in our index
+            # factor = 1.0/sum(self.forwardIndex.values())
+            # self.forwardIndex = {key:value*factor for key,value in self.forwardIndex.items()}
+
+        # print(self.forwardIndex['http://www.w3.org/2000/01/rdf-schema#label()()Taylor Swift'])
         # print(list(self.forwardIndex.keys())[list(self.forwardIndex.values()).index(max(self.forwardIndex.values()))], \
         #     'which occurs for ', list(self.forwardIndex.values()).count(max(self.forwardIndex.values())))
+

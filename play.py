@@ -54,7 +54,7 @@ constants.URL = options.url
 
 
 print('Running the game..')
-if questioner == 'Entropy' or 'Scoring':
+if questioner in ['Entropy', 'Scoring']:
     game = Game(state=State(initializeState=False), questioner=questioner, againstHuman=againstHuman, devMode=dev)
 else:
     game = Game(state=State(), questioner=questioner, againstHuman=againstHuman, devMode=dev)

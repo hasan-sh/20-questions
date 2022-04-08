@@ -152,7 +152,7 @@ def rescursiveQuery(state, split=0.5, depth=0, lastKnownAnswer = 'yes'):
     #     return  rescursiveQuery(state.yesHints, depth-1) #result[0]['value'], result[1]['value'], depth-1)
     return best
 
-def getCurrentCount(state, api):
+def getCurrentCount(state):
     ''' 
     used by entropyBot, retrieves the count of po's given certain state
     '''
@@ -216,3 +216,14 @@ def retrieveName(predicate, question, state):
 
 # a = readPickleBack('tournament_output.pkl')
 # print(a)
+
+
+
+# a_file = open('.\\20-questions\\tournament_output.pkl', "rb")
+# objs = []
+# objs.append(pickle.load(a_file))
+# # print(type(objs[0][1]))
+# for obj in objs[0][1]['games']:
+#     # print(obj)
+#     if objs[0][1]['games'][obj]['won'] == 1:
+#         print(objs[0][1]['games'][obj]['questionsAsked'])
