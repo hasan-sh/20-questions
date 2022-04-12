@@ -5,20 +5,89 @@ import random
 import pickle
 
 """
-TODO: Document
+Contains multiple functions that serve to assist the game.
 
+Methods
+-------
+createLabel(s)
+    Meant to create labels. Takes parsed uri as input, thus entity['value'].
+
+escapeCharacters(s)
+    Meant to escape specific punctuations when creating the prefixed entity.
+
+parsePrefixes(triple)
+    Retrieves all prefixes out of a single triple.
+
+parseTriple(triple)
+    Makes a human readable string out of a single triple of URI's.
+
+parseGraph(g)
+    Transform all triples in a graph to human readable strings.
+
+addFilterSPARQL(yesHints, noHints)
+    Returns a string object consisting of all yesHints and noHints thats could be used directly into a SPARQL query.
+
+load_Bot(name)
+    Takes the name of the bot and creates an object to intialize the bot.
+
+rescursiveQuery(state, split, depth, lastKnownAnswer)
+    Used by the entropy bot, makes a query which retrieves the po's and thier counts.
+
+getCurrentCount(state)
+    Used by entropy bot, retrieves the count of po's given certain state
+
+readPickleBack(filename)
+    Reads the pickle file that stores all informations about the runs.
+
+retrieveName(predicate, question, state)
+    ??
 """
 
 def createLabel(s):
-    ''' Meant to create labels. Takes parsed uri as input, thus entity['value'] '''
+    ''' 
+    Meant to create labels. Takes parsed uri as input, thus entity['value'] 
+    
+    Parameters 
+    ----------
+    s : str
+        Parsed uri of the entity.
+
+    Returns
+    -------
+    The parsed uri, without underscores.
+    
+    '''
     return s['value'].replace('_',' ')
     
 def escapeCharacters(s):
-    ''' meant to escape specific punctuations when creating the prefixed entity '''
+    ''' 
+    Meant to escape specific punctuations when creating the prefixed entity 
+    
+    Parameters 
+    ----------
+    s : str
+        Parsed uri of the entity.
+
+    Returns
+    -------
+    A prefixed entity without specific puntuations?
+    '''
     return re.sub(r"([%s])"%(string.punctuation.replace(":", "")),    r"\\\1", s)
 
 def parsePrefixes(triple):
-    ''' Retrieves all prefixes out of a single triple'''
+    ''' 
+    Retrieves all prefixes out of a single triple
+
+    Parameters 
+    ----------
+    triple : list
+        A list containing the uri's of a triple. 
+
+    Returns
+    -------
+    ?
+    
+    '''
     result = ['#'.join(v.get('value').split('#')[:-1]) + '#'
                 if '#' in v.get('value')
                 else '/'.join(v.get('value').split('/')[:-1])+'/'
@@ -28,14 +97,33 @@ def parsePrefixes(triple):
     return result 
 
 def parseTriple(triple):
-    ''' Makes a human readable string out of a single triple of URI's'''
+    ''' 
+    Makes a human readable string out of a single triple of URI's
+    
+    Parameters 
+    ----------
+    triple : list
+        A list containing the uri's of a triple. 
+
+    Returns
+    ---
+    A list of triples, parsed to be human readable.
+    '''
     return [v.get('value').split('/')[-1].split('#')[-1] for v in triple]
 
 
 def parseGraph(g):
     ''' 
     Transform all triples in a graph to human readable strings.
-    Return: list of the triples (NOT GRAPH)
+
+    Parameters 
+    ----------
+    g : list
+        A list containing all the triples in a graph?
+
+    Returns
+    ---
+    A list of the triples (NOT GRAPH).
     '''
     parsedGraph = []
     for triple in g:
@@ -80,7 +168,7 @@ def addFilterSPARQL(yesHints = [], noHints = []):
 
 def load_bot(name):
     """
-    takes the name of the bot and creates an object to intialize the bot
+    Takes the name of the bot and creates an object to intialize the bot
     name: The folder name of the bot.
     """
     path = f'bots.{name}.bot'
@@ -90,7 +178,7 @@ def load_bot(name):
 
 
 def rescursiveQuery(state, split=0.5, depth=0, lastKnownAnswer = 'yes'):
-    ''' used by the entropy bot, makes a query which retrieves the po's and thier counts.
+    ''' Used by the entropy bot, makes a query which retrieves the po's and thier counts.
     split => if 1 chooses the po that occurs the most in the data (greedy approach)
              if 0.5 chooses the po that allows for 50% split in the data i.e. the entropy minimizing po
              if 0.1 chooses the po that allows for 10% split in the data (minimalistic approach) 
@@ -151,7 +239,7 @@ def rescursiveQuery(state, split=0.5, depth=0, lastKnownAnswer = 'yes'):
 
 def getCurrentCount(state):
     ''' 
-    used by entropyBot, retrieves the count of po's given certain state
+    Used by entropyBot, retrieves the count of po's given certain state
     '''
     api = state.api
     prefixes = '\n'.join(api.prefixes)
