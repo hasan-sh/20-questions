@@ -140,13 +140,13 @@ def rescursiveQuery(state, split=0.5, depth=0, lastKnownAnswer = 'yes'):
     qres = api.parseJSON(qres, [['poCount', 'p', 'o']])
     state.history = qres
     totalCount = getCurrentCount(state)
+    if not qres:
+        return []
     a = np.array([int(x[0]['value']) for x in state.history])
     if np.all(a == 1): # This means that the bot found one specific subject, and there is only one label!
         labels = list(filter(lambda x: x[1]['value'] == 'label', qres))
         # print('only labels', )
-        if not labels: # fail safe
-            return []
-        return random.choice(labels)
+        if labels: return random.choice(labels)
     best = min(qres, key=lambda x: abs(int(x[0]['value']) - int(totalCount) * split))
     # if depth > 0:
     #     return  rescursiveQuery(state.yesHints, depth-1) #result[0]['value'], result[1]['value'], depth-1)
