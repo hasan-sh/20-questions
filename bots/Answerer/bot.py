@@ -33,23 +33,24 @@ class Answerer:
         This chosen entity will be used to answer the questions posed by the questioner bot.
     """
 
-    def __init__(self, ignoranceLevel = 0.1, mode = 'hard'): # modes easy and hard
+    def __init__(self, ignoranceLevel = 0, mode = 'hard'): # modes easy and hard
         self.ignoranceLevel = ignoranceLevel
         self.api = api.API()
-        self.entity = self.pickEntity()
-        # self.entity = [{
-        #   "type": "uri",
-        # #   "uri": "http://yago-knowledge.org/resource/Taylor_Swift"
-        # #   "uri": "https://yago-knowledge.org/resource/Borussia_Dortmund"
+        # self.entity = self.pickEntity()
+        self.entity = [{
+          "type": "uri",
+          "uri": "http://yago-knowledge.org/resource/Taylor_Swift",
+          "value": "Taylor Swift"
+        #   "uri": "https://yago-knowledge.org/resource/Borussia_Dortmund"
         #   "uri": "http://yago-knowledge.org/resource/United_States"
         #   "uri": "http://yago-knowledge.org/resource/Blast_from_the_Past_(film)"
-    #   }]
+        }]
         while not self.entity:
             self.entity = self.pickEntity()
         result = self.collectTriples(self.entity)
         self.entityTriples = [[row.get('uri') for row in rows] for rows in result]
         self.mode = mode
-        print('CHOSEN ENTITY: ', self.entity, '\n')
+        print('CHOSEN ENTITY: ', helpers.parseTriple(self.entity))
         print('Number of entityTriples', len(self.entityTriples))
 
     def collectTriples(self, entity):
@@ -102,13 +103,13 @@ class Answerer:
                 if random.randint(0,100) < self.ignoranceLevel*100:
                     """ Here there can be two options either a random answer or just the wrong answer"""
                     if self.mode == 'easy':
-                        # print('this is random answer')
+                        print('this is random answer')
                         if random.randint(0,100)%2 == 0:
                             return 'yes'
                         else:
                             return 'no'
                     elif self.mode == 'hard':
-                        # print('this is wrong answer')
+                        print('this is wrong answer')
                         if [p.get('uri'), o.get('uri')] in self.entityTriples:
                             return 'no'
                         else:
