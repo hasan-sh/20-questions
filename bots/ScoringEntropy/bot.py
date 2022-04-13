@@ -41,19 +41,26 @@ class ScoringEntropyBot:
     def bestQuestion(self):
         ''' DOWN makes use of only score '''
 
-        # highest = max(self.scoreIndex.values())
-        # indices = [i for i, j in enumerate(self.scoreIndex.values()) if j == highest]
-        # if len(indices) > 1: 
-        #     best = list(self.scoreIndex.keys())[random.choice(indices)]
-        # else:
-        #     best = list(self.scoreIndex.keys())[indices[0]]
+        highest = max(self.scoreIndex.values())
+        indices = [i for i, j in enumerate(self.scoreIndex.values()) if j == highest]
+        best = list(self.scoreIndex.keys())[random.choice(indices)]
 
         # best = list(self.scoreIndex.keys())[list(self.scoreIndex.values()).index(highest)]
 
         # totalCount = sum(self.countIndex.values())
-        # best = min(self.countIndex, key=lambda x: abs(int(self.countIndex[x]) - int(totalCount) * self.split))
-        totalCount = sum(self.scoreIndex.values())
-        best = min(self.scoreIndex, key=lambda x: abs(int(self.scoreIndex[x]) - int(totalCount) * self.split))
+        # best = min(self.countIndex, key=lambda x: abs(int(self.countIndex[x])) - int(totalCount) * self.split)
+
+
+        # best = min(self.countIndex, key=lambda x:  \
+        #    -( ( int(self.countIndex[x]) / int(totalCount) ) * np.log2( int(self.countIndex[x])/int(totalCount) ) + \
+        #         ( (int(totalCount)-int(self.countIndex[x])) / int(totalCount) ) * np.log2( (int(totalCount)-int(self.countIndex[x])) / int(totalCount) ) )\
+        #     )
+
+        # -( countYes/total * log(countYes/total) + countNo/total * log(countNo/total) )
+
+
+        # totalCount = sum(self.scoreIndex.values())
+        # best = min(self.scoreIndex, key=lambda x: abs(int(self.scoreIndex[x]) - int(totalCount) * self.split))
 
         return helpers.keyToQuestion(best, self.api)
 
@@ -95,9 +102,16 @@ class ScoringEntropyBot:
                 countIndex will store the (normalized) counts'''
 
             # normalize the values in our index
-            factor = 1.0/sum(self.countIndex.values())
-            self.scoreIndex = {key:value*factor for key,value in self.countIndex.items()}
+            
+            totalCount = sum(self.countIndex.values())
+            # factor = 1.0/totalCount
+            # self.scoreIndex = {key:value*factor for key,value in self.countIndex.items()}
+            # self.scoreIndex = {key:abs(value - totalCount * self.split) for key,value in self.countIndex.items()}
 
+            self.scoreIndex = {key:-( (value/totalCount) * np.log2( value/totalCount ) + \
+                 ( (totalCount-value) / totalCount )  * np.log2(  (totalCount-value) / totalCount ) )\
+             for key,value in self.countIndex.items()}
+            
         # print(list(self.scoreIndex.keys())[list(self.scoreIndex.values()).index(max(self.scoreIndex.values()))], \
         #     'which occurs for ', list(self.scoreIndex.values()).count(max(self.scoreIndex.values())))
 
