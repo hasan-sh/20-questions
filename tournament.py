@@ -39,7 +39,7 @@ class Tournament:
         questionsAsked = np.array([])
         winners = np.array([])
         for i in range(self.repeat):
-            print(f'Playing game #{i+1}')
+            print(f'\nPlaying game #{i+1}')
             if self.botName == 'Entropy' or 'Scoring':
                 state = State(initializeState=False)
             else:
@@ -62,12 +62,16 @@ class Tournament:
         bestGame = np.min(questionsAsked)
         self.stats['std'] = np.std(questionsAsked)
         self.stats['nrQuestionsBestGame'] = round(bestGame)
-        
+        wonGamesAskedQuestions = 0
+        for game in self.stats['games']:
+            if self.stats['games'][game]['won'] == 1:
+                wonGamesAskedQuestions += self.stats['games'][game]['questionsAsked'] 
         print(f"\n \
         The {self.botName} bot has won {wonByBot} games. \n \
         Average number of asked questions {round(np.mean(questionsAsked))} out of {self.questionLimit}.\n \
+        Average number of asked questions in won games {round(wonGamesAskedQuestions/wonByBot)} out of {self.questionLimit}.\n \
         Std: {np.std(questionsAsked)}. \n \
-        Number of asked questions in the best game {round(bestGame)} out of {self.questionLimit} \n ")
+        Number of asked questions in the best game {round(bestGame)} out of {self.questionLimit} \n ")        
         self.saveStats(toFile=True)
 
     def saveStats(self, toFile=False, short=True):
