@@ -136,10 +136,20 @@ def parseGraph(g):
 
 def addFilterSPARQL(yesHints = [], noHints = []):
     """
-    Returns a string object consisting of all yesHints and noHints thats could be used directly into a SPARQL query.
     The SPARQL query need to have the prefixes defined in order for this to work.
     Each time a question is asked, the string object is extended with the used (p,o)
     The number of total hints is equal to the number of questions asked so far.
+
+    Parameters 
+    ----------
+    yesHints : list
+        A list containing all the p/o combinations that the answerer responded "yes" to.
+    noHints : list
+        A list containing all the p/o combinations that the answerer responded "no" to.
+
+    Returns
+    ---
+    A string object consisting of all yesHints and noHints to be used directly in a SPARQL query.
     """
     s = ''
     for hint in yesHints:
@@ -169,7 +179,16 @@ def addFilterSPARQL(yesHints = [], noHints = []):
 def load_bot(name):
     """
     Takes the name of the bot and creates an object to intialize the bot
-    name: The folder name of the bot.
+    
+
+    Parameters 
+    ----------
+    name : str
+       The folder name of the bot.
+
+    Returns
+    ---
+    The module of the selected bot.
     """
     path = f'bots.{name}.bot'
     module = importlib.import_module(path)
@@ -178,11 +197,29 @@ def load_bot(name):
 
 
 def rescursiveQuery(state, split=0.5, depth=0, lastKnownAnswer = 'yes'):
-    ''' Used by the entropy bot, makes a query which retrieves the po's and thier counts.
-    split => if 1 chooses the po that occurs the most in the data (greedy approach)
-             if 0.5 chooses the po that allows for 50% split in the data i.e. the entropy minimizing po
-             if 0.1 chooses the po that allows for 10% split in the data (minimalistic approach) 
-    Depth => could be used to calculate complex entropy i.e. combination of po's'''
+    ''' 
+    Used by the entropy bot, makes a query which retrieves the po's and thier counts.
+        
+    Parameters 
+    ----------
+    state : ??
+
+    split : float
+        Determines for the entropy bot how much it want a po combination to be able to split by. 
+        if 1 chooses the po that occurs the most in the data (greedy approach).
+        if 0.5 chooses the po that allows for 50% split in the data i.e. the entropy minimizing po.
+        if 0.1 chooses the po that allows for 10% split in the data (minimalistic approach).
+
+    depth : int
+        Used to calculate complex entropy i.e. combination of po's.
+
+    lastKnownAnswer : str 
+        The last answer given by the answerer (default='yes'). 
+
+    Returns
+    ---
+    The po combination that splits closest to the split variable.
+    '''
     api = state.api
     if lastKnownAnswer == 'no':
         state.history = [ x for x in state.history if x != state.noHints[-1]] # takes approximately 1 millisecond
@@ -240,6 +277,14 @@ def rescursiveQuery(state, split=0.5, depth=0, lastKnownAnswer = 'yes'):
 def getCurrentCount(state):
     ''' 
     Used by entropyBot, retrieves the count of po's given certain state
+
+    Parameters 
+    ----------
+    state : ??
+
+    Returns
+    ---
+    Po combination together with how often they occur. 
     '''
     api = state.api
     prefixes = '\n'.join(api.prefixes)
@@ -262,7 +307,18 @@ def getCurrentCount(state):
     return qres[0][0]['value']
 
 def readPickleBack(filename):
-    ''' used to read the pickle file that stores all informations about the runs'''
+    ''' 
+    Used to read the pickle file that stores all informations about the runs
+    
+    Parameters 
+    ----------
+    filename : str
+        The name of a file.
+
+    Returns
+    ---
+    A list of what is in the file. 
+    '''
     a_file = open(filename, "rb")
     objs = []
     while 1:
@@ -273,6 +329,9 @@ def readPickleBack(filename):
     return objs
 
 def retrieveName(predicate, question, state):
+    """
+    TODO: Documentation
+    """
     api = state.api
     object = question[2]
     if predicate == 'givenName':
