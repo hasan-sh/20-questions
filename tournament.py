@@ -105,8 +105,8 @@ class Tournament:
         Returns -> None 
         """
         if toFile:
-            oldData = helpers.readPickleBack('.\\20-questions\\tournament_output.pkl')
-            with open('.\\20-questions\\tournament_output.pkl', 'wb') as file: 
+            oldData = helpers.readPickleBack('./tournament_output.pkl')
+            with open('./tournament_output.pkl', 'wb') as file: 
                 pickle.dump(oldData, file)
                 pickle.dump(self.stats, file)
         else:

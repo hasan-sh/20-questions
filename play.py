@@ -58,4 +58,6 @@ if questioner == 'Entropy':
 else:
     game = Game(state=State(), questioner=questioner, againstHuman=againstHuman, devMode=dev)
 winner = game.run()
+print(game.state.noHints)
+
 print("The winner ", winner)
