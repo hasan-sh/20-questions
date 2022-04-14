@@ -82,6 +82,8 @@ class API(SPARQLWrapper):
                             elif x.get('xml:lang'):
                                 x['value'] = re.sub(r"(['])", r"\\\1", x['value'])
                                 x['prefix_entity'] = f"'{x['value']}'@{x['xml:lang']}"
+                            elif x.get('datatype'):
+                                x['prefix_entity'] = f"'{x['uri']}'^^<{x['datatype']}>"
                             else:
                                 x['prefix_entity'] = f"'{x['value']}'"
                             
