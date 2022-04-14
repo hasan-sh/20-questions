@@ -103,6 +103,10 @@ def rescursiveQuery(state, split=0.5, depth=0, lastKnownAnswer = 'yes'):
         totalCount = getCurrentCount(state)
         if state.history:
             best = min(state.history, key=lambda x: abs(int(x[0]['value']) - int(totalCount) * split))
+        #     best = max(state.history, key=lambda x:  \
+        #    -( ( int(x[0]['value']) / int(totalCount) ) * np.log( int(x[0]['value'])/int(totalCount) ) + \
+        #         ( (int(totalCount)-int(x[0]['value'])) / int(totalCount) ) * np.log( (int(totalCount)-int(x[0]['value'])) / int(totalCount) ) )\
+        #     )
             return best
     prefixes = '\n'.join(api.prefixes)
     query = f"""
@@ -148,6 +152,10 @@ def rescursiveQuery(state, split=0.5, depth=0, lastKnownAnswer = 'yes'):
         # print('only labels', )
         if labels: return random.choice(labels)
     best = min(qres, key=lambda x: abs(int(x[0]['value']) - int(totalCount) * split))
+    # best = max(state.history, key=lambda x:  \
+    #        -( ( int(x[0]['value']) / int(totalCount) ) * np.log( int(x[0]['value'])/int(totalCount) ) + \
+    #             ( (int(totalCount)-int(x[0]['value'])) / int(totalCount) ) * np.log( (int(totalCount)-int(x[0]['value'])) / int(totalCount) ) )\
+    #         )
     # if depth > 0:
     #     return  rescursiveQuery(state.yesHints, depth-1) #result[0]['value'], result[1]['value'], depth-1)
     return best
