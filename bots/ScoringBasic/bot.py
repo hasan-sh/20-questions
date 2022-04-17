@@ -55,8 +55,8 @@ class ScoringBasicBot:
                     self.scoreIndex[res] += self.inforce if answer == 'yes' else -self.punish
                 except: pass
             
-            print(self.scoreIndex['http://www.w3.org/2000/01/rdf-schema#label()()Taylor Swift'])
-            print(list(self.scoreIndex.keys())[list(self.scoreIndex.values()).index(max(self.scoreIndex.values()))], max(self.scoreIndex.values()))
+            # print(self.scoreIndex['http://www.w3.org/2000/01/rdf-schema#label()()Taylor Swift'])
+            # print(list(self.scoreIndex.keys())[list(self.scoreIndex.values()).index(max(self.scoreIndex.values()))], max(self.scoreIndex.values()))
 
             # delete the entry of the asked question (to no ask it anymore)
             self.scoreIndex.pop( str(question[1]['uri'] + '()()' + question[2]['uri']) )
