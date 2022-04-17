@@ -4,6 +4,7 @@ from argparse import ArgumentParser
 from engine.state.main import State
 from game import Game
 from util import constants, helpers
+import scipy.stats as st
 
 """
 Running this file in the command line will start the game. 
@@ -37,10 +38,11 @@ class Tournament:
 
         """
         questionsAsked = np.array([])
+        wonGamesAskedQuestions = np.array([])
         winners = np.array([])
         for i in range(self.repeat):
             print(f'\nPlaying game #{i+1}')
-            if self.botName == 'Entropy' or 'Scoring':
+            if self.botName in ['Entropy', 'ScoringBasic', 'ScoringAdvanced', 'ScoringEntropy', 'ScoringSmartA', 'ScoringSmartB']:
                 state = State(initializeState=False)
             else:
                 state = State()
@@ -48,7 +50,8 @@ class Tournament:
             winner = game.run()
             winners = np.append(winners, [winner])
             questionsAsked = np.append(questionsAsked, [state.questionsAsked])
-            
+            if winner == 1:
+                wonGamesAskedQuestions = np.append(wonGamesAskedQuestions, [state.questionsAsked])
             self.stats['games'][str(i)] = {
                 "won": winner,
                 # "questioner": questioner.getStats(),
@@ -62,17 +65,25 @@ class Tournament:
         bestGame = np.min(questionsAsked)
         self.stats['std'] = np.std(questionsAsked)
         self.stats['nrQuestionsBestGame'] = round(bestGame)
-        wonGamesAskedQuestions = 0
-        for game in self.stats['games']:
-            if self.stats['games'][game]['won'] == 1:
-                wonGamesAskedQuestions += self.stats['games'][game]['questionsAsked'] 
+        
+        # for game in self.stats['games']:
+            # if self.stats['games'][game]['won'] == 1:
+                # wonGamesAskedQuestions = np.append(wonGamesAskedQuestions, [self.stats['games'][game]['questionsAsked'] ])
+                # wonGamesAskedQuestions += self.stats['games'][game]['questionsAsked'] 
         print(f"\n \
         The {self.botName} bot has won {wonByBot} games. \n \
-        Average number of asked questions {round(np.mean(questionsAsked))} out of {self.questionLimit}.\n \
-        Average number of asked questions in won games {round(wonGamesAskedQuestions/wonByBot)} out of {self.questionLimit}.\n \
+        Average number of asked questions {np.round(np.mean(questionsAsked))} out of {self.questionLimit}.\n \
+        95% confidence interval all games: {np.round(st.t.interval(alpha=0.95,df=len(questionsAsked)-1, loc=np.mean(questionsAsked), scale=st.sem(questionsAsked)))}\n \
+        99% confidence interval all games: {np.round(st.t.interval(alpha=0.99,df=len(questionsAsked)-1, loc=np.mean(questionsAsked), scale=st.sem(questionsAsked)))}\n \
+        Average number of asked questions in won games {np.round(np.mean(wonGamesAskedQuestions))} out of {self.questionLimit}.\n \
+        95% confidence interval won games: {np.round(st.t.interval(alpha=0.95,df=len(wonGamesAskedQuestions)-1, loc=np.mean(wonGamesAskedQuestions), scale=st.sem(wonGamesAskedQuestions)))} \n \
+        99% confidence interval won games: {np.round(st.t.interval(alpha=0.99, df=len(wonGamesAskedQuestions)-1,loc=np.mean(wonGamesAskedQuestions), scale=st.sem(wonGamesAskedQuestions)))}\n \
         Std: {np.std(questionsAsked)}. \n \
-        Number of asked questions in the best game {round(bestGame)} out of {self.questionLimit} \n ")        
+        Number of asked questions in the best game {round(bestGame)} out of {self.questionLimit} \n \
+        The list of the games is {questionsAsked}")      
+          
         self.saveStats(toFile=True)
+    # st.t.interval(alpha=0.95, df=len(questionsAsked)-1, loc=np.mean(questionsAsked), scale=st.sem(questionsAsked)) 
 
     def saveStats(self, toFile=False, short=True):
         """
