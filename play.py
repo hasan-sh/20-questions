@@ -40,7 +40,7 @@ parser.add_argument("-d", "--development",
 parser.add_argument("-url", "--repository-url",
                     dest="url",
                     help="URL of the repository to be used. (default: ... .)",
-                    default="http://127.0.0.1:7200/repositories/top2021")
+                    default="http://192.168.178.45:7200/repositories/Thesis")
 
 options = parser.parse_args()
 

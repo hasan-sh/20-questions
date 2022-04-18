@@ -3,7 +3,7 @@
 from engine.state.main import State
 from util import helpers, constants
 from bots.Base.bot import BaseBot
-from bots.Answerer.bot import Answerer
+from bots.AnswererBaseline.bot import AnswererBase
 
 
 class Game:
@@ -14,7 +14,7 @@ class Game:
     """
     Runs a the game's while loop. The game terminates when the number of asked questions exceeds the QUESTIONS_LIMIT variable in constants.py
     """
-    def __init__(self, state=None, nQuestions=constants.QUESTIONS_LIMIT, questioner=None, againstHuman = True, devMode = False): # TODO: load players dynamically.
+    def __init__(self, state=None, nQuestions=constants.QUESTIONS_LIMIT, questioner=None, againstHuman = False, devMode = False): # TODO: load players dynamically.
         self.nQuestions = nQuestions
         self.state = state
         # Players: [Questioner, Answerer]
@@ -24,7 +24,7 @@ class Game:
         else:
             self.questioner = BaseBot(self.state)
         self.againstHuman = againstHuman
-        self.answerer = 'User' if self.againstHuman else Answerer()
+        self.answerer = 'User' if self.againstHuman else AnswererBase()
         self.devMode = devMode
 
     # game loop

@@ -3,6 +3,7 @@ import re, string
 import numpy as np
 import random
 import pickle
+from scipy import spatial
 
 """
 Contains multiple functions that serve to assist the game.
@@ -355,3 +356,12 @@ def retrieveName(predicate, question, state):
     
 # a = readPickleBack('tournament_output.pkl')
 # print(a)
+
+def jaccard(list1, list2):
+    intersection = len(list(set(list1).intersection(list2)))
+    union = (len(set(list1)) + len(set(list2))) - intersection
+    return float(intersection)/union
+
+def cosineSimilarity(list1, list2):
+    result = 1 - spatial.distance.cosine(list1, list2)
+    return result
