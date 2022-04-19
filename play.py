@@ -37,11 +37,6 @@ parser.add_argument("-d", "--development",
                     help="Development mode (default: False)",
                     default=False)
 
-parser.add_argument("-url", "--repository-url",
-                    dest="url",
-                    help="URL of the repository to be used. (default: ... .)",
-                    default="http://127.0.0.1:7200/repositories/top2021")
-
 options = parser.parse_args()
 
 dev = options.dev == 'True'
@@ -50,7 +45,6 @@ questioner = options.questioner
 
 againstHuman = options.opponent == 'True'
 
-constants.URL = options.url
 
 print('Running the game..')
 if questioner == 'Entropy':

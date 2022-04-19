@@ -81,7 +81,7 @@ class Game:
                 else:
                     answer = self.answerer.getAnswer(question)
                     if self.devMode == True:
-                        print('Question: ', " ".join(helpers.parseTriple(question)[1:]), '==> ', answer)
+                        print(f'Question: {self.state.questionsAsked}', " ".join(helpers.parseTriple(question)[1:]), '==> ', answer)
 
                 if answer in constants.POSSIBLE_ANSWERS:
                     self.state.update(question, answer)

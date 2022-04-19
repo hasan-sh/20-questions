@@ -77,6 +77,7 @@ class Tournament:
                 "noAnswers":  len(state.noHints),
                 "yesHints": state.yesHints,
                 "noHints": state.noHints,
+                "entity": game.answerer.entity,
             }
         wonByBot = winners[np.where(winners == 1)].size
         bestGame = np.min(questionsAsked)
@@ -104,10 +105,12 @@ class Tournament:
 
         Returns -> None 
         """
-        if toFile:
-            oldData = helpers.readPickleBack('./tournament_output.pkl')
-            with open('./tournament_output.pkl', 'wb') as file: 
-                pickle.dump(oldData, file)
+        if toFile: # TODO: what if there's no file?
+            print("Saving stats..")
+            oldData = helpers.readPickleBack(f'./{fileName}')
+            with open(f'./{fileName}', 'wb') as file: 
+                if oldData:
+                    pickle.dump(oldData, file)
                 pickle.dump(self.stats, file)
         else:
             if short:
@@ -121,23 +124,24 @@ parser.add_argument("-r", "--repeat",
                     dest="repeat",
                     help="Number of games to play (default: 10)",
                     type=int,
-                    default=10)
+                    default=1)
 
 parser.add_argument("-p", "--player",
                     dest="player",
                     help="The bot to play against the answerer (default: Base)",
                     default='Base')
 
-parser.add_argument("-url", "--repository-url",
-                    dest="url",
-                    help="URL of the repository to be used. (default: True.)",
-                    default="http://127.0.0.1:7200/repositories/top2021")
+parser.add_argument("-f", "--file-name",
+                    dest="fileName",
+                    help="File name to read from (Default: tournament_runs.pkl)",
+                    type=str,
+                    default="tournament_runs.pkl")
 
 
 options = parser.parse_args()
 repeat = options.repeat
 player = options.player
-constants.URL = options.url
+fileName = options.fileName
 
 if __name__ == '__main__':
     tournament = Tournament(player, repeat)
