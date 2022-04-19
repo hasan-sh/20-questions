@@ -1,6 +1,7 @@
 from tkinter.messagebox import YES
 from util import helpers, api, constants
 import random
+import numpy as np
 
 class Answerer:
     """
@@ -104,48 +105,38 @@ class Answerer:
                  answerer(does "type human" hold?)
         """
         _, p, o = question
-        if p['value'] not in ['label', 'image', 'givenName', 'sameAs']: # dont lie when it comes to labels
-            if self.ignoranceLevel > 0:
-                if random.randint(0,100) < self.ignoranceLevel*100:
-                    """ Here there can be two options either a random answer or just the wrong answer"""
-                    if self.mode == 'easy':
-                        # print('this is random answer')
-                        if random.randint(0,100)%2 == 0:
-                            return 'yes'
-                        else:
-                            return 'no'
-                    elif self.mode == 'hard':
-                        # print('this is wrong answer')
-                        if [p.get('uri'), o.get('uri')] in self.entityTriples:
-                            return 'no'
-                        else:
-                            return 'yes'
-        
         if [p.get('uri'), o.get('uri')] in self.entityTriples:
             return 'yes'
         else:
             return 'no'
     
-    def pickEntity(self):
-        """
-        Queries the KG to randomly select an entity with a type and a label.
-
-        Parameters -> None
-
-        Returns
-        -------
-        entity
-            The URI of the entity selected by the Answerer bot. 
-        """
-        query ="""
-        SELECT distinct ?s
-            WHERE {
-                ?s a ?_.
-                ?s <http://www.w3.org/2000/01/rdf-schema#label> ?__.
-            }
-        """
+    def collectEntities(self):
+        query = """ SELECT DISTINCT ?s 
+                    WHERE {
+                        ?s a ?_.
+                        ?s <http://www.w3.org/2000/01/rdf-schema#label> ?__.
+                        ?s ?p ?o."""
         g = self.api.queryKG(query)
         g = self.api.parseJSON(g, [['s']])
+        return g
+
+    def comparison(self):
+        outliers = []
+        ent = self.collectEntities(self)
+        ent = np.ent
+        for i in ent:
+            simscore = 0
+            compList = ent[ent != i]
+            targetTriples = self.collectTriples(i)
+            for j in compList:
+                compTriples = self.collectTriples(j)
+                simscore += helpers.cosineSimilarity(targetTriples, compTriples)
+            if (simscore/len(compList)) < 0.1:
+                outliers.append(i)
+        return outliers
+
+
+    def pickEntity(self):
+        g = self.comparison(self)
         entity = random.choice(g)
         return entity
-        
