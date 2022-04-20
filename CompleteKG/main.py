@@ -86,69 +86,38 @@ class CompleteKG:
 
 
         # Calculate the similarities and choose the best.
-        o1 = localHelpers.cosineSim(obj, falsePO[1])[0]
-        o2 = localHelpers.cosineSim(obj, falsePO[1])[0]
-
-        p1 = localHelpers.cosineSim(nreBestRelation[0], falsePO[0])[0]
-        p2 = localHelpers.cosineSim(bertBestRelation[0], falsePO[0])[0]
-
         falsePO = ' '.join(falsePO)
-        po1 = localHelpers.cosineSim(f'{nreBestRelation[0]} {obj}', falsePO)[0]
-        po2 = localHelpers.cosineSim(f'{bertBestRelation[0]} {obj}', falsePO)[0]
 
         spo1 = localHelpers.cosineSim(f'{subj[-1]} {nreBestRelation[0]} {obj}', f'{subj[-1]} {falsePO}')[0]
         spo2 = localHelpers.cosineSim(f'{subj[-1]} {bertBestRelation[0]} {obj}', f'{subj[-1]} {falsePO}')[0]
-        
-        mean1 = np.mean([o1, p1, po1])
-        mean2 = np.mean([o2, p2, po2])
 
         confidence1 = sentSim * spo1 # * p1 * po1 
         confidence2 = sentSim * spo2 # * p2 * po2
 
-        self.print(mean1, mean2)
         return {
-                # [0.2, 0.3, mean1, mean2]
-                #  confidence level # how sure are we to add a triple!
                 'sent': sent,
-                'model':'nre', 
-                'mean': mean1, 
-                'relation': nreBestRelation,
+                'model':'nre',  
+                'modelsRelation': nreBestRelation,
                 'confidence': confidence1 
                 } if confidence1 > confidence2 \
             else {
                 'sent': sent,
                 'model': 'bert',
-                'mean': mean2, 
-                'relation': bertBestRelation,
+                'modelsRelation': bertBestRelation,
                 'confidence': confidence2 
                 }
-        # return {'candidate': sent, 'o': obj, 'falsePO': falsePO, 'similarities': allSimilarities}
-        return {
-                # [0.2, 0.3, mean1, mean2]
-                #  confidence level # how sure are we to add a triple!
-                'model':'nre', 
-                'mean': mean1, 
-                'relation': nreBestRelation,
-                'confidence': confidence1 
-                } if mean1 > mean2 \
-            else {
-                'model': 'bert',
-                'mean': mean2, 
-                'relation': bertBestRelation,
-                'confidence': confidence2 
-                }
-        # pass
-
+        
     def run(self):
         self.print('Running main...')
         # self.print(cosineSim('Hasan hates mo', 'mo loves hasan'))
         # history = []
         s = time.time()
+        triplesToAdd = []
         for i, run in enumerate(self.history):
             self.print(f'Run no. {i}')
             if run:
-                triplesToAdd = []
-                for game in run['games'].values():
+                games = run[0]['games'].values() if type(run) == list else run['games'].values()
+                for game in games:
                     noHints = game['noHints' if self.noHints else 'yesHints']
                     entity = game['entity'][0]['uri'].rsplit('/', 1)[-1]
                     subj = entity.split('_')
@@ -157,6 +126,7 @@ class CompleteKG:
                     with alive_bar(len(noHints), dual_line=True, title='Processing...') as bar:
                         for relation in noHints: 
                             falsePO = localHelpers.parseRelation(relation)
+                            bar.title(' '.join(falsePO))
                             self.print('\nGet Candidates For: ', subj, falsePO[1])
                             candidates = localHelpers.getCandidates(doc.sents, subj, falsePO)
                             candidates.sort(key=itemgetter(1), reverse=True) # sort based on the similarity score between the false object and subject with respect to the sentence.
@@ -175,19 +145,18 @@ class CompleteKG:
                                     # consider not having a threshold at all. 
                                     # everything with confidence above 1% could be a true positive; 1, 10, 20, 30, 40..
                                     # this will show that setting a threshold is both difficult and cumbersome!
-                                    relation.pop(0)
+                                    
                                     relation.insert(0, game['entity'][0])
-                                    triplesToAdd.append({'candidate': bestCandidate, 'relation': relation})
+                                    triplesToAdd.append({'candidate': bestCandidate, 'triple': relation})
+                                    bar.text(f'Found {len(triplesToAdd)} valuable triples!')
                             bar()
             else:
                 self.print('empty', run)
         for t in triplesToAdd:
             print('\nADD the following: ', t, '\n')
-
         curr_time = (time.time() - s) * 1000
         self.print(curr_time)
-        # falseRelations = [[helpers.parseTriple(noHints[i])[1],helpers.parseTriple(noHints[i])[2]] for i in range(len(noHints))]
-        # 
+        
 
     
     def runExamples(self):
