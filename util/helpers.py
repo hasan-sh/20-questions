@@ -362,6 +362,16 @@ def jaccard(list1, list2):
     union = (len(set(list1)) + len(set(list2))) - intersection
     return float(intersection)/union
 
-def cosineSimilarity(list1, list2):
-    result = 1 - spatial.distance.cosine(list1, list2)
+def createVector(entityPredicates, predicateCount):
+    vector = []
+    for predicate in predicateCount:
+        if predicate[0] in entityPredicates:
+            vector.append(1/int(predicate[1]))
+        else:
+            vector.append(0)
+    return vector
+
+
+def cosineSimilarity(vector1, vector2):
+    result = 1 - spatial.distance.cosine(vector1, vector2)
     return result

@@ -1,9 +1,11 @@
 from tkinter.messagebox import YES
+
+from SPARQLWrapper import QueryResult
 from util import helpers, api, constants
 import random
 import numpy as np
 
-class Answerer:
+class AnswererCosine:
     """
     The Class representing the Answerer in case there is no human player.
     
@@ -51,6 +53,16 @@ class Answerer:
         print('CHOSEN ENTITY: ', self.entity, '\n')
         print('Number of entityTriples', len(self.entityTriples))
 
+    def predicateCount(self):
+        query = """SELECT ?p (COUNT (?p) as ?predicates)
+                    WHERE { ?s ?p ?o.}
+                    GROUP BY ?p"""
+        qres = self.api.queryKG(query)
+        result = []
+        for i in qres['results']['bindings']:
+            result.append([i['p']['value'], i['predicates']['value']])
+        return result
+
     def collectTriples(self, entity):
         """
         Gathers all the triples from the KG about the chosen entity.
@@ -75,6 +87,21 @@ class Answerer:
         qres = self.api.queryKG(query)
         qres = self.api.parseJSON(qres, [['p','o']])
         return qres
+
+    def collectPredicates(self, entity):
+        query ="""
+              select ?p
+              where {
+                <%s> ?p ?o .
+              }
+        """%(entity[0].get('uri'))
+        qres = self.api.queryKG(query)
+        qres = self.api.parseJSON(qres, [['p']])
+        predicates = []
+        for i in qres:
+            for j in i:
+                predicates.append(j.get('uri'))
+        return predicates
 
     def collectEntities(self):
         query = """SELECT DISTINCT ?s
@@ -115,28 +142,34 @@ class Answerer:
                     WHERE {
                         ?s a ?_.
                         ?s <http://www.w3.org/2000/01/rdf-schema#label> ?__.
-                        ?s ?p ?o."""
+                        ?s ?p ?o.
+                    }"""
         g = self.api.queryKG(query)
         g = self.api.parseJSON(g, [['s']])
         return g
 
     def comparison(self):
+        amountPredicates = self.predicateCount()
         outliers = []
-        ent = self.collectEntities(self)
-        ent = np.ent
+        ent = self.collectEntities()
         for i in ent:
             simscore = 0
-            compList = ent[ent != i]
-            targetTriples = self.collectTriples(i)
+            compList = [x for y, x in enumerate(ent) if y!=ent.index(i)]
+            targetTriples = self.collectPredicates(i)
+            targetVector = helpers.createVector(targetTriples, amountPredicates)
+            # Catching the exception generated     
             for j in compList:
-                compTriples = self.collectTriples(j)
-                simscore += helpers.cosineSimilarity(targetTriples, compTriples)
+                compTriples = self.collectPredicates(j)
+                compVector = helpers.createVector(compTriples, amountPredicates)
+                simscore += helpers.cosineSimilarity(targetVector, compVector)
+            print(i, simscore)
             if (simscore/len(compList)) < 0.1:
                 outliers.append(i)
+        print(outliers)
         return outliers
 
 
     def pickEntity(self):
-        g = self.comparison(self)
+        g = self.comparison()
         entity = random.choice(g)
         return entity

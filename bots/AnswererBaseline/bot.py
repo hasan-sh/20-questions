@@ -95,23 +95,6 @@ class AnswererBase:
                  answerer(does "type human" hold?)
         """
         _, p, o = question
-        if p['value'] not in ['label', 'image', 'givenName', 'sameAs']: # dont lie when it comes to labels
-            if self.ignoranceLevel > 0:
-                if random.randint(0,100) < self.ignoranceLevel*100:
-                    """ Here there can be two options either a random answer or just the wrong answer"""
-                    if self.mode == 'easy':
-                        # print('this is random answer')
-                        if random.randint(0,100)%2 == 0:
-                            return 'yes'
-                        else:
-                            return 'no'
-                    elif self.mode == 'hard':
-                        # print('this is wrong answer')
-                        if [p.get('uri'), o.get('uri')] in self.entityTriples:
-                            return 'no'
-                        else:
-                            return 'yes'
-        
         if [p.get('uri'), o.get('uri')] in self.entityTriples:
             return 'yes'
         else:

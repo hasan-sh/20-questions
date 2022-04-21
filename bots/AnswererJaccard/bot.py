@@ -3,7 +3,7 @@ from util import helpers, api, constants
 import random
 import numpy as np
 
-class Answerer:
+class AnswererJaccard:
     """
     The Class representing the Answerer in case there is no human player.
     
@@ -71,19 +71,39 @@ class Answerer:
               where {
                 <%s> ?p ?o .
               }
-        """%(entity[0].get('uri'))
+        """%(entity)
         qres = self.api.queryKG(query)
         qres = self.api.parseJSON(qres, [['p','o']])
         return qres
 
-    def collectEntities(self):
-        query = """SELECT DISTINCT ?s
-                WHERE{
-                    ?s a ?_.
-                    ?s <http://www.w3.org/2000/01/rdf-schema#label> ?__.
-                    ?s ?p ?o. """
-        qentity = self.api.queryKG(query)
-        return qentity
+    def collectPredicates(self, entity):
+        """
+        Gathers all the triples from the KG about the chosen entity.
+
+        Parameters
+        ----------
+        entity : str
+            The entity selected from the KG.
+
+        Returns
+        -------
+        qres
+           A list of predicate object pairs where the chosen entity is in the subject position. 
+        """
+        
+        query ="""
+              select ?p
+              where {
+                <%s> ?p ?o .
+              }
+        """%(entity[0].get('uri'))
+        qres = self.api.queryKG(query)
+        qres = self.api.parseJSON(qres, [['p']])
+        predicates = []
+        for i in qres:
+            for j in i:
+                predicates.append(j.get('uri'))
+        return predicates
 
     def getAnswer(self, question):
         """
@@ -115,29 +135,31 @@ class Answerer:
                     WHERE {
                         ?s a ?_.
                         ?s <http://www.w3.org/2000/01/rdf-schema#label> ?__.
-                        ?s ?p ?o."""
+                    }
+                """
         g = self.api.queryKG(query)
         g = self.api.parseJSON(g, [['s']])
         return g
 
     def comparison(self):
         outliers = []
-        ent = self.collectEntities(self)
-        ent = np.ent
+        ent = self.collectEntities()
         for i in ent:
             simscore = 0
-            compList = ent[ent != i]
-            targetTriples = self.collectTriples(i)
+            compList = [x for y, x in enumerate(ent) if y!=ent.index(i)]
+            targetTriples = self.collectPredicates(i)
             for j in compList:
-                compTriples = self.collectTriples(j)
+                compTriples = self.collectPredicates(j)
                 simscore += helpers.jaccard(targetTriples, compTriples)
+            print(i, simscore)
             if (simscore/len(compList)) < 0.1:
                 outliers.append(i)
+        print(outliers)
         return outliers
 
 
     def pickEntity(self):
-        g = self.comparison(self)
+        g = self.comparison()
         entity = random.choice(g)
         return entity
         
