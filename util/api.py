@@ -8,8 +8,8 @@ class API(SPARQLWrapper):
     TODO: Document
 
     """
-    def __init__(self) -> None:
-        super().__init__(constants.URL)
+    def __init__(self, url) -> None:
+        super().__init__(url or constants.URL)
         self._prefixes = {}
         self.prefixes = {}
         self.memory = {}
@@ -40,7 +40,7 @@ class API(SPARQLWrapper):
         except:# SPARQLExceptions.QueryBadFormed as e :
             e = sys.exc_info()[0]
             print('ERROR: ', e)
-            print(query)
+            print(query, constants.URL)
             return {'results': {'bindings': []}}
         return results
         

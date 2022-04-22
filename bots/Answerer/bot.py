@@ -38,8 +38,9 @@ class Answerer:
         # self.entity = self.pickEntity()
         self.entity = [{
           "type": "uri",
-        #   "uri": "http://yago-knowledge.org/resource/Taylor_Swift"
-          "uri": "http://yago-knowledge.org/resource/Borussia_Dortmund"
+          "uri": "http://yago-knowledge.org/resource/Taylor_Swift"
+        #   "uri": "http://yago-knowledge.org/resource/Borussia_Dortmund"
+        #   "uri": "http://yago-knowledge.org/resource/Tom_Hanks"
         }]
         while not self.entity:
             self.entity = self.pickEntity()
@@ -70,6 +71,7 @@ class Answerer:
                 <%s> ?p ?o .
               }
         """%(entity[0].get('uri'))
+        print(query)
         qres = self.api.queryKG(query)
         qres = self.api.parseJSON(qres, [['p','o']])
         return qres
