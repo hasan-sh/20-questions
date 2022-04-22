@@ -147,15 +147,16 @@ class CompleteKG:
                                     # this will show that setting a threshold is both difficult and cumbersome!
                                     
                                     relation.insert(0, game['entity'][0])
-                                    triplesToAdd.append({'candidate': bestCandidate, 'triple': relation})
+                                    triplesToAdd.append({'candidate': bestCandidate, 'triple': relation, 'entity': entity})
                                     bar.text(f'Found {len(triplesToAdd)} valuable triples!')
                             bar()
             else:
                 self.print('empty', run)
-        for t in triplesToAdd:
-            print('\nADD the following: ', t, '\n')
+        # for t in triplesToAdd:
+        #     print('\nADD the following: ', t, '\n')
         curr_time = (time.time() - s) * 1000
         self.print(curr_time)
+        return triplesToAdd
         
 
     

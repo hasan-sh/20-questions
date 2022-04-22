@@ -2,6 +2,7 @@
 from argparse import ArgumentParser
 
 from CompleteKG import main
+from validateTriples import getWikidataId, validate
 
 parser = ArgumentParser()
 
@@ -38,4 +39,10 @@ if __name__ == '__main__':
     if test:
         completeKG.runExamples()
     else:
-        completeKG.run()
+        triples = completeKG.run()
+        toValidate = set()
+        for triple in triples:
+            toValidate.add((triple['entity'], getWikidataId(triple['entity'])))
+        validate(toValidate)
+        
+        print('Next step is to validate the chosen triples by checking their existence on wikidata!!')
