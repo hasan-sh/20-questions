@@ -3,7 +3,7 @@
 from engine.state.main import State
 from util import helpers, constants
 from bots.Base.bot import BaseBot
-from bots.AnswererCosine.bot import AnswererCosine
+from bots.AnswererJaccard.bot import AnswererJaccard
 
 
 class Game:
@@ -24,7 +24,7 @@ class Game:
         else:
             self.questioner = BaseBot(self.state)
         self.againstHuman = againstHuman
-        self.answerer = 'User' if self.againstHuman else AnswererCosine()
+        self.answerer = 'User' if self.againstHuman else AnswererJaccard()
         self.devMode = devMode
 
     # game loop

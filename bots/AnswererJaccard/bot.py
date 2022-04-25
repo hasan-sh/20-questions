@@ -37,6 +37,9 @@ class AnswererJaccard:
     def __init__(self, ignoranceLevel = 0, mode = 'easy'):
         self.ignoranceLevel = ignoranceLevel
         self.api = api.API()
+        self.index = {}
+        self.ent = self.collectEntities()
+        self.amountPredicates = self.predicateCount()
         self.entity = self.pickEntity()
         # self.entity = [{
         #   "type": "uri",
@@ -50,6 +53,19 @@ class AnswererJaccard:
         self.mode = mode
         print('CHOSEN ENTITY: ', self.entity, '\n')
         print('Number of entityTriples', len(self.entityTriples))
+
+    def predicateCount(self):
+        query = """SELECT ?p (COUNT (?p) as ?predicates)
+                    WHERE { ?s ?p ?o.}
+                    GROUP BY ?p"""
+        qres = self.api.queryKG(query)
+        qres = self.api.parseJSON(qres,  [['p','predicates']])
+        result = []
+        # for i in qres['results']['bindings']:
+        #     result.append([i['p']['value'], i['predicates']['value']])
+        for i in qres:
+            result.append([i[0]['uri'], i[1]['uri']])
+        return result
 
     def collectTriples(self, entity):
         """
@@ -141,15 +157,36 @@ class AnswererJaccard:
         g = self.api.parseJSON(g, [['s']])
         return g
 
+    def createIndex(self):
+        query = """ select ?s ?p (count(?p) as ?pCount) where { 
+                    	?s ?p ?o .
+                    } group by ?s ?p
+                    """
+        g = self.api.queryKG(query)
+        g = self.api.parseJSON(g, [['s', 'p', 'pCount']])
+        # results = [str(res[0]['uri']) for res in g]
+        g = [res for res in g if res]
+        for res in g:
+            # print(res[0])
+            if str(res[0]['uri']) in self.index.keys():
+                # self.index[str(res[0]['uri'])] = { 'predicates' : str(res[1]['uri']) 
+                self.index[str(res[0]['uri'])]['predicates'].append(str(res[1]['uri']) )
+                self.index[str(res[0]['uri'])]['counts'].append(str(res[2]['uri']) )
+            else:
+                self.index[str(res[0]['uri'])] = {'predicates' : [str(res[1]['uri']) ], 'counts': [str(res[2]['uri']) ]}
+
     def comparison(self):
         outliers = []
-        ent = self.collectEntities()
-        for i in ent:
+        self.createIndex() # make an index that connects entries (subjects) ==> predicates
+        for i in self.ent:
             simscore = 0
-            compList = [x for y, x in enumerate(ent) if y!=ent.index(i)]
-            targetTriples = self.collectPredicates(i)
+            compList = [x for y, x in enumerate(self.ent) if y!=self.ent.index(i)]
+            # targetTriples = self.collectPredicates(i) # self.index[i] => predicates
+            targetTriples = self.index[i[0]['uri']]['predicates']
+            # Catching the exception generated     
             for j in compList:
-                compTriples = self.collectPredicates(j)
+                # compTriples = self.collectPredicates(j)
+                compTriples = self.index[j[0]['uri']]['predicates']
                 simscore += helpers.jaccard(targetTriples, compTriples)
             print(i, simscore)
             if (simscore/len(compList)) < 0.1:

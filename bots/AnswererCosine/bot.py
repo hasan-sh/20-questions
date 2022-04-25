@@ -39,6 +39,9 @@ class AnswererCosine:
     def __init__(self, ignoranceLevel = 0, mode = 'easy'):
         self.ignoranceLevel = ignoranceLevel
         self.api = api.API()
+        self.index = {}
+        self.ent = self.collectEntities()
+        self.amountPredicates = self.predicateCount()
         self.entity = self.pickEntity()
         # self.entity = [{
         #   "type": "uri",
@@ -50,6 +53,7 @@ class AnswererCosine:
         result = self.collectTriples(self.entity)
         self.entityTriples = [[row.get('uri') for row in rows] for rows in result]
         self.mode = mode
+        
         print('CHOSEN ENTITY: ', self.entity, '\n')
         print('Number of entityTriples', len(self.entityTriples))
 
@@ -58,9 +62,12 @@ class AnswererCosine:
                     WHERE { ?s ?p ?o.}
                     GROUP BY ?p"""
         qres = self.api.queryKG(query)
+        qres = self.api.parseJSON(qres,  [['p','predicates']])
         result = []
-        for i in qres['results']['bindings']:
-            result.append([i['p']['value'], i['predicates']['value']])
+        # for i in qres['results']['bindings']:
+        #     result.append([i['p']['value'], i['predicates']['value']])
+        for i in qres:
+            result.append([i[0]['uri'], i[1]['uri']])
         return result
 
     def collectTriples(self, entity):
@@ -103,14 +110,14 @@ class AnswererCosine:
                 predicates.append(j.get('uri'))
         return predicates
 
-    def collectEntities(self):
-        query = """SELECT DISTINCT ?s
-                WHERE{
-                    ?s a ?_.
-                    ?s <http://www.w3.org/2000/01/rdf-schema#label> ?__.
-                    ?s ?p ?o. """
-        qentity = self.api.queryKG(query)
-        return qentity
+    # def collectEntities(self):
+    #     query = """SELECT DISTINCT ?s
+    #             WHERE{
+    #                 ?s a ?_.
+    #                 ?s <http://www.w3.org/2000/01/rdf-schema#label> ?__.
+    #                 ?s ?p ?o. """
+    #     qentity = self.api.queryKG(query)
+    #     return qentity
 
     def getAnswer(self, question):
         """
@@ -142,25 +149,43 @@ class AnswererCosine:
                     WHERE {
                         ?s a ?_.
                         ?s <http://www.w3.org/2000/01/rdf-schema#label> ?__.
-                        ?s ?p ?o.
                     }"""
         g = self.api.queryKG(query)
         g = self.api.parseJSON(g, [['s']])
         return g
 
+    def createIndex(self):
+        query = """ select ?s ?p (count(?p) as ?pCount) where { 
+                    	?s ?p ?o .
+                    } group by ?s ?p
+                    """
+        g = self.api.queryKG(query)
+        g = self.api.parseJSON(g, [['s', 'p', 'pCount']])
+        # results = [str(res[0]['uri']) for res in g]
+        g = [res for res in g if res]
+        for res in g:
+            # print(res[0])
+            if str(res[0]['uri']) in self.index.keys():
+                # self.index[str(res[0]['uri'])] = { 'predicates' : str(res[1]['uri']) 
+                self.index[str(res[0]['uri'])]['predicates'].append(str(res[1]['uri']) )
+                self.index[str(res[0]['uri'])]['counts'].append(str(res[2]['uri']) )
+            else:
+                self.index[str(res[0]['uri'])] = {'predicates' : [str(res[1]['uri']) ], 'counts': [str(res[2]['uri']) ]}
+
     def comparison(self):
-        amountPredicates = self.predicateCount()
         outliers = []
-        ent = self.collectEntities()
-        for i in ent:
+        self.createIndex() # make an index that connects entries (subjects) ==> predicates
+        for i in self.ent:
             simscore = 0
-            compList = [x for y, x in enumerate(ent) if y!=ent.index(i)]
-            targetTriples = self.collectPredicates(i)
-            targetVector = helpers.createVector(targetTriples, amountPredicates)
+            compList = [x for y, x in enumerate(self.ent) if y!=self.ent.index(i)]
+            # targetTriples = self.collectPredicates(i) # self.index[i] => predicates
+            targetTriples = self.index[i[0]['uri']]['predicates']
+            targetVector = helpers.createVector(targetTriples, self.amountPredicates)
             # Catching the exception generated     
             for j in compList:
-                compTriples = self.collectPredicates(j)
-                compVector = helpers.createVector(compTriples, amountPredicates)
+                # compTriples = self.collectPredicates(j)
+                compTriples = self.index[j[0]['uri']]['predicates']
+                compVector = helpers.createVector(compTriples, self.amountPredicates)
                 simscore += helpers.cosineSimilarity(targetVector, compVector)
             print(i, simscore)
             if (simscore/len(compList)) < 0.1:
