@@ -188,9 +188,10 @@ class AnswererJaccard:
                 # compTriples = self.collectPredicates(j)
                 compTriples = self.index[j[0]['uri']]['predicates']
                 simscore += helpers.jaccard(targetTriples, compTriples)
-            print(i, simscore)
-            if (simscore/len(compList)) < 0.1:
+            if simscore < 100:
                 outliers.append(i)
+            if len(outliers) == 10:
+                break
         print(outliers)
         return outliers
 

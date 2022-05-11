@@ -187,8 +187,7 @@ class AnswererCosine:
                 compTriples = self.index[j[0]['uri']]['predicates']
                 compVector = helpers.createVector(compTriples, self.amountPredicates)
                 simscore += helpers.cosineSimilarity(targetVector, compVector)
-            print(i, simscore)
-            if (simscore/len(compList)) < 0.1:
+            if simscore < 100:
                 outliers.append(i)
         print(outliers)
         return outliers

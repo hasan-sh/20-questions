@@ -122,7 +122,7 @@ class AnswererBase:
             HAVING (?predicates = 2)
         """
         g = self.api.queryKG(query)
-        g = self.api.parseJSON(g, [['s']])
+        g = self.api.parseJSON(g, [['s', 'predicates']])
         entity = random.choice(g)
         return entity
         
