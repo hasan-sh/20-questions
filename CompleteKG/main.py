@@ -1,13 +1,10 @@
-from statistics import mode
+from copyreg import pickle
+import pickle
 from alive_progress import alive_bar
 import spacy
-import re
 import time
 from transformers import pipeline
-from sentence_transformers import SentenceTransformer
 import opennre
-from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
 from operator import itemgetter
 from util import helpers
 from CompleteKG import helpers as localHelpers
@@ -25,8 +22,9 @@ class CompleteKG:
         self.nlp = spacy.load('en_core_web_lg')
         self.noHints = noHints
         self.fileName = fileName
-        self.history = helpers.readPickleBack(self.fileName)
+        self.runs = helpers.readPickleBack(self.fileName)
         self.dev = dev
+        self.stats = {}
 
     def print(self, *text):
         if self.dev:
@@ -95,68 +93,95 @@ class CompleteKG:
         confidence2 = sentSim * spo2 # * p2 * po2
 
         return {
-                'sent': sent,
+                'sent': sent.text,
+                'obj': obj,
                 'model':'nre',  
                 'modelsRelation': nreBestRelation,
-                'confidence': confidence1 
+                'confidence': confidence1[0] 
                 } if confidence1 > confidence2 \
             else {
-                'sent': sent,
+                'sent': sent.text,
+                'obj': obj,
                 'model': 'bert',
                 'modelsRelation': bertBestRelation,
-                'confidence': confidence2 
+                'confidence': confidence2[0] 
                 }
         
-    def run(self):
+    def run(self, acceptenceLevel=0.10):
         self.print('Running main...')
         # self.print(cosineSim('Hasan hates mo', 'mo loves hasan'))
         # history = []
         s = time.time()
-        triplesToAdd = []
-        for i, run in enumerate(self.history):
-            self.print(f'Run no. {i}')
-            if run:
-                games = run[0]['games'].values() if type(run) == list else run['games'].values()
-                for game in games:
-                    noHints = game['noHints' if self.noHints else 'yesHints']
-                    entity = game['entity'][0]['uri'].rsplit('/', 1)[-1]
-                    subj = entity.split('_')
-                    subj.append(" ".join(subj))
-                    doc = self.nlp(localHelpers.getWikiPageText(entity).text) # TODO: Consider a more robust setence splitter.
-                    with alive_bar(len(noHints), dual_line=True, title='Processing...') as bar:
-                        for relation in noHints: 
-                            falsePO = localHelpers.parseRelation(relation)
-                            bar.title(' '.join(falsePO))
-                            self.print('\nGet Candidates For: ', subj, falsePO[1])
-                            candidates = localHelpers.getCandidates(doc.sents, subj, falsePO)
-                            candidates.sort(key=itemgetter(1), reverse=True) # sort based on the similarity score between the false object and subject with respect to the sentence.
-                            self.print('Candidates', candidates)
-                            bestCandidates = []
-                            for i, (sent, _, obj, sentSim) in enumerate(candidates):
-                                self.print(f'SENTENCE no. {i} ', sent, obj)
-                                result = self.compareClassifiers(sent, subj, obj, falsePO, sentSim)
-                                bestCandidates.append(result)
-                            
-                            if bestCandidates:
-                                bestCandidate = max(bestCandidates, key=lambda x: x['confidence'])
-                                self.print('best candidates ', bestCandidates)
-                                self.print('FINAL CAND. ', bestCandidate)
-                                if bestCandidate['confidence'] > 0.10:
-                                    # consider not having a threshold at all. 
-                                    # everything with confidence above 1% could be a true positive; 1, 10, 20, 30, 40..
-                                    # this will show that setting a threshold is both difficult and cumbersome!
-                                    
-                                    relation.insert(0, game['entity'][0])
-                                    triplesToAdd.append({'candidate': bestCandidate, 'triple': relation, 'entity': entity})
-                                    bar.text(f'Found {len(triplesToAdd)} valuable triples!')
-                            bar()
+        for i, run in enumerate(self.runs):
+            print(f'Run no. {i}')
+            games = run['games'].values()
+            # self.stats[i] = {'hints': hints, 'entity': entity}
+            self.stats[i] = {} # assuming per run there's only one game!
+            for game in games:
+                key = 'noHints' if self.noHints else 'yesHints'
+                hints = game[key]
+                entity = game['entity']['uri'].rsplit('/', 1)[-1]
+                self.stats[i]['entity'] = entity
+                subj = entity.split('_')
+                subj.append(" ".join(subj))
+                doc = self.nlp(localHelpers.getWikiPageText(entity).text) # TODO: Consider a more robust setence splitter.
+                with alive_bar(len(hints), dual_line=True, title='Processing...') as bar:
+                    totlaCands = self.stats[i].get('total') or 0
+                    self.stats[i]['notSelected'] = self.stats[i].get('notSelected') or []
+                    self.stats[i]['selected'] = self.stats[i].get('selected') or []
+                    self.stats[i]['acceptenceLevel'] = acceptenceLevel
+                    for relation in hints: 
+                        falsePO = localHelpers.parseRelation(relation)
+                        bar.title(' '.join(falsePO))
+                        self.print('\nGet Candidates For: ', subj, falsePO[1])
+                        candidates = localHelpers.getCandidates(doc.sents, subj, falsePO, acceptenceLevel=0.55) # these are the relavent candidates.
+                        candidates.sort(key=itemgetter(1), reverse=True) # sort based on the similarity score between the false object and subject with respect to the sentence.
+                        totlaCands += len(candidates) 
+                        self.print('Candidates', candidates)
+                        bestCandidates = []
+                        for sentIndex, (sent, _, obj, sentSim) in enumerate(candidates):
+                            self.print(f'SENTENCE no. {sentIndex} ', sent, obj)
+                            result = self.compareClassifiers(sent, subj, obj, falsePO, sentSim)
+                            bestCandidates.append(result)
+                        
+                        if bestCandidates:
+                            bestCandidate = max(bestCandidates, key=lambda x: x['confidence'])
+                            relation.pop(0)
+                            relation.insert(0, game['entity'])
+                            resultToAdd = {'candidate': bestCandidate, 'triple': relation, 'entity': entity}
+                            self.print('best candidates ', bestCandidates)
+                            self.print('FINAL CAND. ', bestCandidate)
+                            if bestCandidate['confidence'] > acceptenceLevel:
+                                # consider not having a threshold at all. 
+                                # everything with confidence above 1% could be a true positive; 1, 10, 20, 30, 40..
+                                # this will show that setting a threshold is both difficult and cumbersome!
+                                
+                                self.stats[i]['selected'].append(resultToAdd)
+
+                                bar.text(f'Found {len(self.stats[i]["selected"])} valuable triples!')
+                            else:
+                                # print(i, self.stats)
+                                self.stats[i]['notSelected'].append(resultToAdd)
+                        bar()
+                    print(totlaCands)
+
+                    self.stats[i]['total'] = totlaCands
+                # print(self.stats)
             else:
                 self.print('empty', run)
         # for t in triplesToAdd:
         #     print('\nADD the following: ', t, '\n')
         curr_time = (time.time() - s) * 1000
         self.print(curr_time)
-        return triplesToAdd
+        self.saveStats(acceptenceLevel)
+        # return triplesToAdd
+    
+    def saveStats(self, a):
+
+        print("Saving stats..")
+        with open(f'./possibleTriples_{int(a*100)}_{55}.pkl', 'ab') as file: 
+            pickle.dump(self.stats, file, pickle.HIGHEST_PROTOCOL)
+        self.print('Done saving stats.')
         
 
     

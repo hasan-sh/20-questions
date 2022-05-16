@@ -14,8 +14,8 @@ def getWikiPageText(entity):
     )
     return wiki.page('{0}'.format(entity))
 
-def parseRelation(relation):
-    spo = helpers.parseTriple(relation)
+def parseRelation(relation, key='value'):
+    spo = helpers.parseTriple(relation, key)
         
     pred = spo[1] # assuming that all predicates are camel-case;
     # then, we transform them, like: countryOfOrigin -> country of origin 
@@ -35,7 +35,7 @@ model_embedding.cuda()
 def cosineSim(x: str, y: str):
     return cosine_similarity(model_embedding.encode(x, show_progress_bar=False).reshape(1, -1), model_embedding.encode(y, show_progress_bar=False).reshape(1, -1))
 
-def getCandidates(sents, subj, falsePO):
+def getCandidates(sents, subj, falsePO, acceptenceLevel=0.6):
     candidates = []
     relaventSents = 0
     for sent in sents:
@@ -58,9 +58,10 @@ def getCandidates(sents, subj, falsePO):
         similarObjs = [[cosineSim(token.text, falsePO[1])[0], token.text] for token in sent]
         similarObjs.sort(key=itemgetter(0), reverse=True)
         bestObj = similarObjs[0]    
-        if bestObj[0] > 0.6:
+        if bestObj[0] > acceptenceLevel:
             sentsWithObjects.append([sent, bestObj[0], bestObj[1], sentSim]) # selected sentence, similarity score, and the chosen, best object.
     #     else:
     #         print('not included ', sent, bestObj)
     # print("Relavent sents: ", relaventSents, 'from ', len(list(sents)))
     return sentsWithObjects
+    # 05348372279
