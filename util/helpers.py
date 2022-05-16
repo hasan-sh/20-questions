@@ -96,7 +96,7 @@ def parsePrefixes(triple):
         print('NO result', result, triple)
     return result 
 
-def parseTriple(triple):
+def parseTriple(triple, key='value'):
     ''' 
     Makes a human readable string out of a single triple of URI's
     
@@ -109,7 +109,7 @@ def parseTriple(triple):
     ---
     A list of triples, parsed to be human readable.
     '''
-    return [v.get('value').split('/')[-1].split('#')[-1] for v in triple]
+    return [v.get(key).split('/')[-1].split('#')[-1] for v in triple]
 
 
 def parseGraph(g):
@@ -319,14 +319,19 @@ def readPickleBack(filename):
     ---
     A list of what is in the file. 
     '''
-    a_file = open(filename, "rb")
     objs = []
-    while 1:
-        try:
-            objs.append(pickle.load(a_file))
-        except EOFError:
-            break
+    for item in readPickle(filename):
+        objs.append(item)
     return objs
+
+def readPickle(filename):
+    a_file = open(filename, "rb")
+    with open(filename, 'rb') as f:
+        try:
+            while 1:
+                yield pickle.load(a_file)
+        except EOFError:
+            pass
 
 def retrieveName(predicate, question, state):
     """

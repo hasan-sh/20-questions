@@ -36,10 +36,11 @@ class Tournament:
         Saves the stats from the tournament to a file. 
     """
 
-    def __init__(self, botName, repeat=10, questionLimit=constants.QUESTIONS_LIMIT):
+    def __init__(self, botName, repeat=10, questionLimit=constants.QUESTIONS_LIMIT, entities=[None]):
         self.botName = botName
         self.repeat = repeat
         self.questionLimit = questionLimit
+        self.entities = entities
         
         self.stats = {
             'bot': botName,
@@ -56,40 +57,41 @@ class Tournament:
 
         Returns -> None
         """
-        questionsAsked = np.array([])
-        winners = np.array([])
-        for i in range(self.repeat):
-            print(f'Playing game #{i+1}')
-            if self.botName == 'Entropy':
-                state = State(initializeState=False)
-            else:
-                state = State()
-            game = Game(state=state, nQuestions=self.questionLimit, questioner=self.botName, againstHuman=False)
-            winner = game.run()
-            winners = np.append(winners, [winner])
-            questionsAsked = np.append(questionsAsked, [state.questionsAsked])
+        for entity in self.entities:
+            questionsAsked = np.array([])
+            winners = np.array([])
+            for i in range(self.repeat):
+                print(f'Playing game #{i+1}')
+                if self.botName == 'Entropy':
+                    state = State(initializeState=False)
+                else:
+                    state = State()
+                game = Game(state=state, nQuestions=self.questionLimit, questioner=self.botName, againstHuman=False, entity=entity)
+                winner = game.run()
+                winners = np.append(winners, [winner])
+                questionsAsked = np.append(questionsAsked, [state.questionsAsked])
+                
+                self.stats['games'][str(i)] = {
+                    "won": winner,
+                    # "questioner": questioner.getStats(),
+                    "questionsAsked": state.questionsAsked,
+                    "yesAnswers": len(state.yesHints),
+                    "noAnswers":  len(state.noHints),
+                    "yesHints": state.yesHints,
+                    "noHints": state.noHints,
+                    "entity": game.answerer.entity,
+                }
+            wonByBot = winners[np.where(winners == 1)].size
+            bestGame = np.min(questionsAsked)
+            self.stats['std'] = np.std(questionsAsked)
+            self.stats['nrQuestionsBestGame'] = round(bestGame)
             
-            self.stats['games'][str(i)] = {
-                "won": winner,
-                # "questioner": questioner.getStats(),
-                "questionsAsked": state.questionsAsked,
-                "yesAnswers": len(state.yesHints),
-                "noAnswers":  len(state.noHints),
-                "yesHints": state.yesHints,
-                "noHints": state.noHints,
-                "entity": game.answerer.entity,
-            }
-        wonByBot = winners[np.where(winners == 1)].size
-        bestGame = np.min(questionsAsked)
-        self.stats['std'] = np.std(questionsAsked)
-        self.stats['nrQuestionsBestGame'] = round(bestGame)
-        
-        print(f"\n \
-        The {self.botName} bot has won {wonByBot} games. \n \
-        Average number of asked questions {round(np.mean(questionsAsked))} out of {self.questionLimit}.\n \
-        Std: {np.std(questionsAsked)}. \n \
-        Number of asked questions in the best game {round(bestGame)} out of {self.questionLimit} \n ")
-        self.saveStats(toFile=True)
+            print(f"\n \
+            The {self.botName} bot has won {wonByBot} games. \n \
+            Average number of asked questions {round(np.mean(questionsAsked))} out of {self.questionLimit}.\n \
+            Std: {np.std(questionsAsked)}. \n \
+            Number of asked questions in the best game {round(bestGame)} out of {self.questionLimit} \n ")
+            self.saveStats(toFile=True)
 
     def saveStats(self, toFile=False, short=True):
         """
@@ -107,11 +109,8 @@ class Tournament:
         """
         if toFile: # TODO: what if there's no file?
             print("Saving stats..")
-            oldData = helpers.readPickleBack(f'./{fileName}')
-            with open(f'./{fileName}', 'wb') as file: 
-                if oldData:
-                    pickle.dump(oldData, file)
-                pickle.dump(self.stats, file)
+            with open(f'./{fileName}', 'ab') as file: 
+                pickle.dump(self.stats, file, pickle.HIGHEST_PROTOCOL)
         else:
             if short:
                 return
@@ -144,5 +143,22 @@ player = options.player
 fileName = options.fileName
 
 if __name__ == '__main__':
-    tournament = Tournament(player, repeat)
+    entities = [{
+          "type": "uri",
+          "uri": "http://yago-knowledge.org/resource/Taylor_Swift"
+        },{
+          "type": "uri",
+          "uri": "http://yago-knowledge.org/resource/Borussia_Dortmund"
+        },{
+          "type": "uri",
+          "uri": "http://yago-knowledge.org/resource/The_Matrix"
+        },{
+          "type": "uri",
+          "uri": "http://yago-knowledge.org/resource/Kingdom_of_the_Netherlands"
+        },{
+          "type": "uri",
+          "uri": "http://yago-knowledge.org/resource/Joe_Biden"
+        }]
+
+    tournament = Tournament(player, repeat, entities=entities)
     tournament.run()

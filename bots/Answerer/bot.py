@@ -32,25 +32,36 @@ class Answerer:
         This chosen entity will be used to answer the questions posed by the questioner bot.
     """
 
-    def __init__(self, ignoranceLevel = 0, mode = 'easy'):
+    def __init__(self, ignoranceLevel = 0, mode = 'easy', entity = None):
         self.ignoranceLevel = ignoranceLevel
         self.api = api.API()
         # self.entity = self.pickEntity()
-        self.entity = [{
+        self.mode = mode
+        self.entity = entity or {
           "type": "uri",
-          "uri": "http://yago-knowledge.org/resource/Taylor_Swift"
+        #   "uri": "http://yago-knowledge.org/resource/Taylor_Swift"
         #   "uri": "http://yago-knowledge.org/resource/Borussia_Dortmund"
-        #   "uri": "http://yago-knowledge.org/resource/Tom_Hanks"
-        }]
+        #   "uri": "http://yago-knowledge.org/resource/The_Matrix"
+          "uri": "http://yago-knowledge.org/resource/Tom_Hanks"
+        }
+        # self.prepareEntity()
+        result = self.collectTriples()
+        self.entityTriples = [[row.get('uri') for row in rows] for rows in result]
+
+    def prepareEntity(self):
         while not self.entity:
             self.entity = self.pickEntity()
-        result = self.collectTriples(self.entity)
+        result = self.collectTriples()
         self.entityTriples = [[row.get('uri') for row in rows] for rows in result]
-        self.mode = mode
         print('CHOSEN ENTITY: ', self.entity, '\n')
         print('Number of entityTriples', len(self.entityTriples))
+        # if 40 < len(self.entityTriples) < 60:
+        #     print('choose another one!')
+        #     self.entity = None
+        #     return self.prepareEntity()
+        return result
 
-    def collectTriples(self, entity):
+    def collectTriples(self):
         """
         Gathers all the triples from the KG about the chosen entity.
 
@@ -66,11 +77,11 @@ class Answerer:
         """
         
         query ="""
-              select *
-              where {
+            select *
+            where {
                 <%s> ?p ?o .
-              }
-        """%(entity[0].get('uri'))
+            }
+        """%(self.entity.get('uri'))
         print(query)
         qres = self.api.queryKG(query)
         qres = self.api.parseJSON(qres, [['p','o']])
@@ -139,5 +150,5 @@ class Answerer:
         g = self.api.queryKG(query)
         g = self.api.parseJSON(g, [['s']])
         entity = random.choice(g)
-        return entity
+        return entity[0]
         
