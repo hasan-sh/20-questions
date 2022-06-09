@@ -1,4 +1,7 @@
 from util import helpers, api
+from bots.Malign.bot import MalignBot
+import rdflib
+from rdflib import URIRef
 
 class State:
 
@@ -33,6 +36,7 @@ class State:
             results = self.api.queryKG()
             self.graph = self.api.parseJSON(results)
         self.currentDepth = depth
+        self.listOfAnswers = []
         self.yesHints = []
         self.noHints = []
         self.tripleHistory = []
@@ -40,6 +44,10 @@ class State:
         self.foundAnswer = ''
         self._prefixes = {}
         self.history = [] # last results
+        # self.malignBot = helpers.load_bot("Malign")(self)
+        # # print("IN MAIN -print type of corruptedGraph:", type(self.corruptedKG.manipulateGraphSP()))
+        # self.corruptedKG = self.malignBot.corruptedKG
+
 
       # update the state of the game.
     def update(self, question, answer):
@@ -59,8 +67,9 @@ class State:
 
         """
         self.questionsAsked += 1
-
+        self.tripleHistory.append(question)
         answer = answer.lower()
+        self.listOfAnswers.append(answer)
         if answer == 'yes':
             # update graph. Save the p,o into a list
             _, p, _ = helpers.parseTriple(question)
@@ -68,10 +77,11 @@ class State:
                 self.foundAnswer = question
                 return
         
-            self.tripleHistory.append(question)
             self.yesHints.append(question)
         elif answer == 'no':
             self.noHints.append(question)
+
+        # print("MAIN - list of answers and triple history: ", self.listOfAnswers, self.tripleHistory)
     # Updates graph each time an answer is given
 
     def updateGraph(self, question, answer):
@@ -113,3 +123,61 @@ class State:
         results = self.api.queryKG(query)
         subGraph = self.api.parseJSON(results, [['s', 'p', 'o']])
         self.graph = subGraph
+
+
+    def createSubGraphX(self, answer, corruptedKG):
+
+        """
+        Minimizes the graph each time an answer is given. This function makes use of yesHints and noHints to query the graph.
+        If no yesAnswers have been given yet, it will limit the subGraph to types, while filtering out the rejected triples. 
+
+        Parameters -> None
+
+        Returns -> None
+        """
+        # prefixes = self.api.prefixes # [f'PREFIX {x}: <{prefix}>' for (prefix, x) in self.api.prefixes.items()]
+        
+        # query = """select *
+        #     where {
+        #         ?s %s;
+        #             ?p ?o.
+        #         """ + ';'.join([" {} {}".format(p['uri'], o['uri']) for (_, p, o) in self.yesHints]) + \
+        #             helpers.addFilterSPARQLX(self.yesHints, self.noHints) + \
+        #         """
+        #     }
+        # """
+
+        query = f"""
+            SELECT *
+            WHERE {{
+            ?s ?p ?o ;
+                {';'.join([" <{}> <{}>".format(p['uri'], o['uri']) for (_, p, o) in self.yesHints])} .
+                {helpers.addFilterSPARQLX(yesHints=self.yesHints, noHints=self.noHints)}    
+            }}
+            """
+
+        if not self.yesHints: # If no (yes) answers have been given yet.
+            query="""select * where { ?s a ?o .
+                                BIND(<http://www.w3.org/1999/02/22-rdf-syntax-ns#type> AS ?p) """+ \
+                                helpers.addFilterSPARQLX(noHints = self.noHints)+ """}"""
+            # query="""select * where { ?s ?p ?o ."""+ \
+            #                     helpers.addFilterSPARQLX(noHints = self.noHints)+ """}"""
+        
+        results = corruptedKG.query(query)
+        # if not results:
+        #     print('results is empty', query)
+        #     if (URIRef("http://yago-knowledge.org/resource/Joe_Biden"), None, None) in corruptedKG:
+        #         print("after, blabla in base")
+        res = self.api.parseJSONX(results, [['s', 'p', 'o']])
+        # if not res: 
+        #     print('res is empty')
+        # self.graph = subGraph
+        qres = [[x[0]['uri'], x[1]['uri'], x[2]['uri']] for x in res if len(x) == 3] # for each triple
+        # if not qres:
+        #     print('qres is empty')
+        subgraph = rdflib.Graph()
+        for res in qres:
+            subgraph.add((URIRef(res[0]), URIRef(res[1]), URIRef(res[2])))
+        # if not subgraph:
+        #     print('graph is empty!')
+        return subgraph

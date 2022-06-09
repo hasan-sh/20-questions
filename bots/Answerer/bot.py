@@ -2,7 +2,6 @@ from tkinter.messagebox import YES
 from util import helpers, api, constants
 import random
 
-#fake line
 
 class Answerer:
     """
@@ -35,22 +34,25 @@ class Answerer:
         This chosen entity will be used to answer the questions posed by the questioner bot.
     """
 
-    def __init__(self, ignoranceLevel = 0, mode = 'easy'):
+    def __init__(self, observerAdvice = None, ignoranceLevel = 0, mode = 'easy'):
         self.ignoranceLevel = ignoranceLevel
         self.api = api.API()
-        self.entity = self.pickEntity()
-        # self.entity = [{
-        #   "type": "uri",
-        #   "uri": "http://yago-knowledge.org/resource/Taylor_Swift"
-        #   "uri": "http://yago-knowledge.org/resource/Borussia_Dortmund"
-        # }]
-        while not self.entity:
+        if observerAdvice is not None:
+            self.entity = [{"uri": observerAdvice,}]
+        else:
             self.entity = self.pickEntity()
+            # self.entity = [{
+            # #   "type": 
+            #     "uri": "http://yago-knowledge.org/resource/Barack_Obama",
+            # #   "uri": "http://yago-knowledge.org/resource/Borussia_Dortmund"
+            # }]
+            while not self.entity:
+                self.entity = self.pickEntity()
         result = self.collectTriples(self.entity)
         self.entityTriples = [[row.get('uri') for row in rows] for rows in result]
         self.mode = mode
         print('CHOSEN ENTITY: ', self.entity, '\n')
-        print('Number of entityTriples', len(self.entityTriples))
+        # print('Number of entityTriples', len(self.entityTriples))
 
     def collectTriples(self, entity):
         """
@@ -66,7 +68,6 @@ class Answerer:
         qres
            A list of predicate object pairs where the chosen entity is in the subject position. 
         """
-        
         query ="""
               select *
               where {
@@ -139,6 +140,7 @@ class Answerer:
         """
         g = self.api.queryKG(query)
         g = self.api.parseJSON(g, [['s']])
-        entity = random.choice(g)
+        entity = random.choice(g) # this will need to be changed
         return entity
+
         

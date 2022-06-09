@@ -8,7 +8,7 @@ from util import constants, helpers
 Running this file in the command line will start the game. 
 Some additional arguments are provided for easier execution through the command line.
 Arguments:
--r => repreat : int
+-r => repeat : int
 -p => which bot to play (Entropy, Base, Random)
 -url => to choose which dataset to use ( should be running on local server) 
 """
@@ -90,7 +90,7 @@ class Tournament:
         Number of asked questions in the best game {round(bestGame)} out of {self.questionLimit} \n ")
         self.saveStats(toFile=True)
 
-    def saveStats(self, toFile=False, short=True):
+    def saveStats(self, toFile=False, short=False):
         """
         Saves the stats from the tournament to a file. 
 
@@ -131,7 +131,7 @@ parser.add_argument("-p", "--player",
 parser.add_argument("-url", "--repository-url",
                     dest="url",
                     help="URL of the repository to be used. (default: True.)",
-                    default="http://127.0.0.1:7200/repositories/top2021")
+                    default="http://127.0.0.1:7200/repositories/humans")
 
 
 options = parser.parse_args()

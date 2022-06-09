@@ -91,4 +91,84 @@ class API(SPARQLWrapper):
                     output.append(spo)
         
         return output
+        
 
+    # def parseJSONX(self, results, variables=[['s', 'p', 'o']]):
+    #         """
+    #         TODO: Document
+
+    #         """
+    #         output = []
+    #         for result in results.bindings:
+    #             if result:
+    #                 for keys in variables:
+    #                     # print("Key: ", keys, type(keys[0]))
+    #                     # if set(keys) == set(result.keys()): # this checked only n times, where n is the length of variables
+    #                     # if result[keys]:
+    #                     spo = []
+    #                     for i in range(len(keys)):
+    #                         # key = result[keys[i]]
+    #                         key = result[keys[i]].toPython()
+    #                         # if 's' in keys[i] and 'schema' in key['value']: # only if the subject is from schema; this is because the subject here binds the p and o.
+    #                         #     break
+    #                         spo.append(key)
+    #                     # for i in range(len(keys)):
+    #                     #     try:
+    #                     #         key = result[keys[i]].toPython() 
+    #                     #     except:
+    #                     #         print('############ result: ', result)
+    #                     #     if 's' in keys[i] and 'schema' in key['value']: # only if the subject is from schema; this is because the subject here binds the p and o.
+    #                     #         break
+    #                     #     spo.append(key)
+
+    #                     # print(spo)
+    #                     for x in spo:
+    #                         if x in self.memory: # if already parsed and in memory
+    #                             x = self.memory[x]
+    #                     spoX = []
+    #                     for x in spo:
+    #                         x = {'value': x, 'uri': x, 'prefix_entity':x}
+    #                         spoX.append(x)
+                            
+                                
+    #                         self.memory[x['uri']] = x # update memory
+                            
+    #                     output.append(spoX)
+    #                     # else:
+    #                     #     print(result.keys())
+    #         # print(output[-1])
+    #         return output
+
+    def parseJSONX(self, results, variables=[['s', 'p', 'o']]):
+            """
+            TODO: Document
+
+            """
+            output = []
+            for result in results.bindings:
+                if result:
+                    for keys in variables:
+                        # print("Key: ", keys, type(keys[0]))
+                        # if set(keys) == set(result.keys()): # this checked only n times, where n is the length of variables
+                        # if result[keys]:
+                        spo = []
+                        for i in range(len(keys)):
+                            # key = result[keys[i]]
+                            key = result[keys[i]].toPython()
+                            spo.append(key)
+
+                        for x in spo:
+                            if x in self.memory: # if already parsed and in memory
+                                x = self.memory[x]
+                        spoX = []
+                        for x in spo:
+                            x = {'value': x, 'uri': x, 'prefix_entity':x}
+                            spoX.append(x)
+                            self.memory[x['uri']] = x # update memory
+                        output.append(spoX)
+                        # output.append(spo)
+
+                        # else:
+                        #     print(result.keys())
+            # print(output[-1])
+            return output
