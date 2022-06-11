@@ -81,12 +81,16 @@ class TournamentMalign:
                 print(f'\n\nPlaying game #{currentGame+1}')
                 if self.botName == 'Entropy':
                     state = State(initializeState=False)
+                # elif self.botName == 'CorruptEntropy': 
+                #     state = State() # else statement in observer works fine here
+                #     # state = self.stateMalign # else statement in observer works fine here as well
                 else:
                     # state = State()
                     self.stateMalign.tripleHistory = [] ## hier gaat iets fout
                     self.stateMalign.listOfAnswers = []
                     self.stateMalign.yesHints = []
                     self.stateMalign.noHints = []
+                    self.stateMalign.foundAnswer = ''
                     self.stateMalign.questionsAsked = 0
                     state = self.stateMalign
                 # game = Game(state=state, nQuestions=self.questionLimit, questioner=self.botName, againstHuman = False, observerFlags = self.observerFlags, corruptedKG = self.corruptedKG, observerStrategy = self.observerStrategy, currentTournament = self.currentTournament, currentGame = currentGame)
@@ -122,9 +126,10 @@ class TournamentMalign:
             # This was tournament number: {self.currentTournament}")
             # self.saveStats(toFile=False, short = True)
             # print(self.observerFlags)
+            self.observerFlags.to_csv("observerFlags_Save.csv", mode = 'a', header = False, index = False)
+            self.observerFlags = pd.DataFrame({"Run":[], "Type":[], "Triple":[], "Count":[], "Comparison":[], "Subjects":[], "Predicates":[], "Objects":[]})
             self.currentTournament += 1
         print(self.observerFlags)
-        self.observerFlags.to_csv("observerFlags_Save.csv", mode = 'a', header = False, index = False)
         print("\nFinished!")
             
 

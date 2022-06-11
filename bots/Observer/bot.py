@@ -76,9 +76,9 @@ class ObserverBot:
         falseKGEntity = self.corruptedKG 
         # print("\nTrue entity according to expert = ", chosenEntity[0]["uri"])
 
-        for question in questionsAsked:
-            print(question[1]["uri"], question[2]["uri"])
-        print(listOfAnswers)
+        # for question in questionsAsked:
+        #     print(question[1]["uri"], question[2]["uri"])
+        # print(listOfAnswers)
 
         count = 1 # needs to be connected to state
         for question, answer in zip(questionsAsked, listOfAnswers):
@@ -264,6 +264,10 @@ class ObserverBot:
         if rows < 2: # dit gaat om de rows in the dataframe
             print("If statement in greedyP\n")
             self.observerFlags, newFound = self.randGlobalAssist()
+            print(newFound, type(newFound))
+            exit()
+            guessPossible(newFound)
+            
             return self.observerFlags, None
         else: 
             print("Else statement in greedyP\n")
@@ -352,6 +356,13 @@ class ObserverBot:
         qres = [x[0]['uri'] for x in qres]
         newTriple = random.choice(qres)
         return newTriple # new candidate for expert
+
+
+    def guessPossible(self, newFound):
+        # newFound =
+        querry = """select distinct ?s where { 
+	        ?s <""" + + """> ?o .
+            }"""
 
 
     def randGlobalAssist(self):

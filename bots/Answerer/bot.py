@@ -43,7 +43,8 @@ class Answerer:
             self.entity = self.pickEntity()
             # self.entity = [{
             # #   "type": 
-            #     "uri": "http://yago-knowledge.org/resource/Barack_Obama",
+            #     # "uri": "http://yago-knowledge.org/resource/Barack_Obama",
+            #     "uri": "http://yago-knowledge.org/resource/Michelle_Fairley",
             # #   "uri": "http://yago-knowledge.org/resource/Borussia_Dortmund"
             # }]
             while not self.entity:

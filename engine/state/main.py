@@ -164,15 +164,23 @@ class State:
             #                     helpers.addFilterSPARQLX(noHints = self.noHints)+ """}"""
         
         results = corruptedKG.query(query)
-        # if not results:
-        #     print('results is empty', query)
-        #     if (URIRef("http://yago-knowledge.org/resource/Joe_Biden"), None, None) in corruptedKG:
-        #         print("after, blabla in base")
+        if not results:
+            query = '''SELECT *
+            WHERE {
+            ?s ?p ?o.}
+            '''
+            resultsX = corruptedKG.query(query)
+            # for r in resultsX:
+            #     print('Graph is not emptyyy',r)
+            print('results is empty', query)
+            if (URIRef("http://yago-knowledge.org/resource/Joe_Biden"), None, None) in corruptedKG:
+                print("after, blabla in base")
         res = self.api.parseJSONX(results, [['s', 'p', 'o']])
         # if not res: 
         #     print('res is empty')
         # self.graph = subGraph
-        qres = [[x[0]['uri'], x[1]['uri'], x[2]['uri']] for x in res if len(x) == 3] # for each triple
+        # qres = [[x[0]['uri'], x[1]['uri'], x[2]['uri']] for x in res if len(x) == 3] # for each triple
+        qres = [[x[0]['uri'], x[1]['uri'], x[2]['uri']] for x in res] # for each triple
         # if not qres:
         #     print('qres is empty')
         subgraph = rdflib.Graph()
