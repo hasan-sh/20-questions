@@ -7,7 +7,7 @@ class EntropyBot:
     """
     _name = 'Entropy Bot'
 
-    def __init__(self, state, split = 1, depth=20):
+    def __init__(self, state, split = 0.5, depth=20):
         self.state = state
         self.split = split
         self.depth = depth

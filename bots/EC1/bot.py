@@ -3,20 +3,22 @@ import numpy as np
 from collections import Counter
 import random
 
-class ScoringAdvancedBot:
-    _name = 'ScoringAdvanced Bot'
+class EC1Bot:
+    _name = 'EC1 Bot'
 
     def __init__(self, state):
         self.api = state.api
         self.state = state
+        self.answer = 'Yes'
         self.scoreIndex = {}
         self.countIndex = {}
         self.combinedIndex = {}
+        self.entropyIndex = {}
         self.history = []
-        self.scoreWeight = 0.9
-        self.countWeight = 0.1
-        self.inforce = 39730
-        self.punish = 2240
+        self.scoreWeight = 0.1
+        self.entropyWeight = 0.9
+        self.inforce = 1
+        self.punish = -1
         self.updateScore()
         
     def nextQuestion(self):
@@ -25,6 +27,7 @@ class ScoringAdvancedBot:
         return triple
 
     def update(self, answer): 
+        self.answer = answer
         self.updateScore(question=self.history[-1],answer=answer)
 
     def bestQuestion(self):
@@ -32,8 +35,6 @@ class ScoringAdvancedBot:
         highest = max(self.combinedIndex.values())
         indices = [i for i, j in enumerate(self.combinedIndex.values()) if j == highest]
         best = list(self.combinedIndex.keys())[random.choice(indices)]
-        # best = list(self.combinedIndex.keys())[list(self.combinedIndex.values()).index(highest)]
-
         return helpers.keyToQuestion(best, self.api)
 
     def updateScore(self, question = None, answer = None):
@@ -62,20 +63,14 @@ class ScoringAdvancedBot:
         if answer:
             for res in results:
                 try:
-                    self.scoreIndex[res] += self.inforce if answer == 'yes' else -self.punish
-                    self.combinedIndex[res] = (self.scoreWeight*self.scoreIndex[res]) + (self.countWeight*self.countIndex[res])
+                    self.scoreIndex[res] += self.inforce if answer == 'yes' else self.punish
+                    self.combinedIndex[res] = (self.scoreWeight*self.scoreIndex[res]) + (self.entropyWeight*self.entropyIndex[res])
                 except: pass
-            # print(self.combinedIndex['http://www.w3.org/2000/01/rdf-schema#label()()Taylor Swift'])
-            # print(self.scoreIndex['http://www.w3.org/2000/01/rdf-schema#label()()Taylor Swift'])
-            # print(self.countIndex['http://www.w3.org/2000/01/rdf-schema#label()()Taylor Swift'],'\n')
-            # print(list(self.combinedIndex.keys())[list(self.combinedIndex.values()).index(max(self.combinedIndex.values()))], max(self.combinedIndex.values()))
-            # print(list(self.scoreIndex.keys())[list(self.scoreIndex.values()).index(max(self.scoreIndex.values()))], max(self.scoreIndex.values()))
-            # print(list(self.countIndex.keys())[list(self.countIndex.values()).index(max(self.countIndex.values()))], max(self.countIndex.values()))
             
             #  delete the entry of the asked question (to no ask it anymore)
             self.scoreIndex.pop( str(question[1]['uri'] + '()()' + question[2]['uri']) )
-            self.countIndex.pop( str(question[1]['uri'] + '()()' + question[2]['uri']) )
             self.combinedIndex.pop( str(question[1]['uri'] + '()()' + question[2]['uri']) )
+            self.entropyIndex.pop( str(question[1]['uri'] + '()()' + question[2]['uri']) )
 
         else: # means we just started => intialize score
             for res in results:
@@ -85,8 +80,9 @@ class ScoringAdvancedBot:
             ''' scoreIndex will contain the scores,
                 countIndex will store the counts'''
             self.scoreIndex = {key:1 for key in self.countIndex.keys()}
-            self.combinedIndex = {key: (self.scoreWeight*value)+(self.countWeight*self.countIndex[key]) for key,value in self.scoreIndex.items()}
+            totalCount = sum(self.countIndex.values())
+            self.entropyIndex = {key:-( (value/totalCount) * np.log2( value/totalCount ) + \
+                 ( (totalCount-value) / totalCount )  * np.log2(  (totalCount-value) / totalCount ) )\
+             for key,value in self.countIndex.items()}
+            self.combinedIndex = {key: (self.scoreWeight*value)+(self.entropyWeight*self.entropyIndex[key]) for key,value in self.scoreIndex.items()}
         
-        # print(list(self.scoreIndex.keys())[list(self.scoreIndex.values()).index(max(self.scoreIndex.values()))], \
-        #     'which occurs for ', list(self.scoreIndex.values()).count(max(self.scoreIndex.values())))
-

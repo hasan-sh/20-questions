@@ -33,39 +33,36 @@ class Answerer:
         This chosen entity will be used to answer the questions posed by the questioner bot.
     """
 
-    def __init__(self, ignoranceLevel = 0.2, mode = 'hard'): # modes easy and hard
+    def __init__(self, ignoranceLevel = 0, mode = 'hard'): # modes easy and hard
         self.ignoranceLevel = ignoranceLevel
         self.api = api.API()
-        # self.entity = self.pickEntity()
-        self.entity = [{
-          "type": "uri",
+        self.entity = self.pickEntity()
 
-        #   "uri": "http://yago-knowledge.org/resource/Grey's_Anatomy", #strong entity 237 po's
+        # self.entity = [{
+        #   "type": "uri",
+
+        #   "uri": "http://yago-knowledge.org/resource/Grey's_Anatomy", # Entity 1: 237 po's
         #   "value": "Grey's Anatomy",
+            
+        #    "uri": "http://yago-knowledge.org/resource/Robin_Williams", # Entity 2: 51 po's
+        #    "value": "Robin Williams",
 
-        #   "uri": "http://yago-knowledge.org/resource/Taylor_Swift", #33
-        #   "value": "Taylor Swift",
+        #    "uri": "http://yago-knowledge.org/resource/Fast_&_Furious_6", # Entity 3: 9 po's
+        #    "value": "Fast and Furious 6",
 
-          "uri": "http://yago-knowledge.org/resource/Robin_Williams", #51 ==> 42ish
-          "value": "Robin Williams",
+        #   "uri": "http://yago-knowledge.org/resource/10,000_Hours", # Entity 4: 4 po's 
+        #   "value": "10000 hours"
 
-        #   "uri": "http://yago-knowledge.org/resource/Megan_Fox", # 14 ==> 35ish
-        #   "value": "Megan Fox"
+        #   "uri": "http://yago-knowledge.org/resource/Elizabeth_II", # Entity4: 79 po's
+        #   "value": "Elizabeth_II",
+        # }]
 
-        #   "uri": "http://yago-knowledge.org/resource/Tobey_Maguire", #16 ==> 38ish
-        #   "value": "Tobey",
-        
-        #   "uri": "http://yago-knowledge.org/resource/Emma_Stone",
-        #   "value": "",
-        }]
-        # while not self.entity:
-        #     self.entity = self.pickEntity()
-        # result = self.collectTriples(self.entity)
-        # self.entityTriples = [[row.get('uri') for row in rows] for rows in result]
-        self.entityTriples = [['http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://yago-knowledge.org/resource/Human'], ['http://www.w3.org/2002/07/owl#sameAs', 'http://g.co/kg/m/0dzf_'], ['http://www.w3.org/2002/07/owl#sameAs', 'http://www.wikidata.org/entity/Q83338'], ['http://www.w3.org/2000/01/rdf-schema#label', 'Robin Williams'], ['http://schema.org/award', 'http://yago-knowledge.org/resource/Golden_Globe_Cecil_B._DeMille_Award'], ['http://schema.org/award', 'http://yago-knowledge.org/resource/Golden_Globe_Award_for_Best_Actor_–_Motion_Picture_Musical_or_Comedy'], ['http://schema.org/award', 'http://yago-knowledge.org/resource/Screen_Actors_Guild_Award_for_Outstanding_Performance_by_a_Cast_in_a_Motion_Picture'], ['http://schema.org/award', 'http://yago-knowledge.org/resource/Disney_Legends'], ['http://schema.org/award', 'http://yago-knowledge.org/resource/Grammy_Award_for_Best_Album_for_Children'], ['http://schema.org/award', 'http://yago-knowledge.org/resource/Women_in_Film_Crystal_+_Lucy_Awards'], ['http://schema.org/award', 'http://yago-knowledge.org/resource/Academy_Award_for_Best_Supporting_Actor'], ['http://schema.org/award', 'http://yago-knowledge.org/resource/National_Board_of_Review_Award_for_Best_Actor'], ['http://schema.org/award', 'http://yago-knowledge.org/resource/49th_Golden_Globe_Awards'], ['http://schema.org/award', 'http://yago-knowledge.org/resource/MTV_Movie_Award_for_Best_Comedic_Performance'], ['http://schema.org/award', 'http://yago-knowledge.org/resource/Golden_Globe_Award_for_Best_Motion_Picture_–_Musical_or_Comedy'], ['http://schema.org/award', 'http://yago-knowledge.org/resource/Screen_Actors_Guild_Award_for_Outstanding_Performance_by_a_Male_Actor_in_a_Supporting_Role'], ['http://schema.org/award', 'http://yago-knowledge.org/resource/Grammy_Award_for_Best_Comedy_Album'], ['http://schema.org/award', 'http://yago-knowledge.org/resource/62nd_Golden_Globe_Awards'], ['http://schema.org/award', 'http://yago-knowledge.org/resource/Primetime_Emmy_Award_for_Outstanding_Individual_Performance_in_a_Variety_or_Music_Program'], ['http://schema.org/award', 'http://yago-knowledge.org/resource/45th_Golden_Globe_Awards'], ['http://schema.org/award', 'http://yago-knowledge.org/resource/36th_Golden_Globe_Awards'], ['http://schema.org/award', 'http://yago-knowledge.org/resource/51st_Golden_Globe_Awards'], ['http://schema.org/alumniOf', 'http://yago-knowledge.org/resource/Juilliard_School'], ['http://schema.org/alumniOf', 'http://yago-knowledge.org/resource/Redwood_High_School_(Larkspur,_California)'], ['http://schema.org/alumniOf', 'http://yago-knowledge.org/resource/College_of_Marin'], ['http://schema.org/alumniOf', 'http://yago-knowledge.org/resource/Claremont_McKenna_College'], ['http://schema.org/alumniOf', 'http://yago-knowledge.org/resource/Detroit_Country_Day_School'], ['http://schema.org/image', 'http://commons.wikimedia.org/wiki/Special:FilePath/Robin%20Williams%202011a%20%282%29.jpg'], ['http://schema.org/spouse', 'http://yago-knowledge.org/resource/Marsha_Garces_Williams'], ['http://schema.org/spouse', 'http://yago-knowledge.org/resource/Susan_Schneider_(artist)'], ['http://schema.org/deathDate', '2014-08-11'], ['http://schema.org/nationality', 'http://yago-knowledge.org/resource/United_States'], ['http://schema.org/familyName', 'http://yago-knowledge.org/resource/Williams_(surname)'], ['http://schema.org/givenName', 'http://yago-knowledge.org/resource/Robin_(name)'], ['http://schema.org/homeLocation', 'http://yago-knowledge.org/resource/Chicago'], ['http://schema.org/homeLocation', 'http://yago-knowledge.org/resource/Paradise_Cay,_California'], ['http://schema.org/homeLocation', 'http://yago-knowledge.org/resource/San_Francisco'], ['http://schema.org/homeLocation', 'http://yago-knowledge.org/resource/Bloomfield_Hills,_Michigan'], ['http://schema.org/homeLocation', 'http://yago-knowledge.org/resource/Sea_Cliff,_San_Francisco'], ['http://schema.org/birthPlace', 'http://yago-knowledge.org/resource/Chicago'], ['http://schema.org/url', 'http://www.robinwilliams.com/'], ['http://schema.org/knowsLanguage', 'http://yago-knowledge.org/resource/English_language'], ['http://schema.org/hasOccupation', 'http://yago-knowledge.org/resource/Mime_artist'], ['http://schema.org/hasOccupation', 'http://yago-knowledge.org/resource/Comedian'], ['http://schema.org/hasOccupation', 'http://yago-knowledge.org/resource/Film_producer'], ['http://schema.org/hasOccupation', 'http://yago-knowledge.org/resource/Actor'], ['http://schema.org/hasOccupation', 'http://yago-knowledge.org/resource/Screenwriter'], ['http://schema.org/hasOccupation', 'http://yago-knowledge.org/resource/Stage_actor'], ['http://schema.org/birthDate', '1951-07-21'], ['http://schema.org/children', 'http://yago-knowledge.org/resource/Zelda_Williams'], ['http://schema.org/deathPlace', 'http://yago-knowledge.org/resource/Tiburon,_California']]
-        # print(self.entityTriples)
+        while not self.entity:
+            self.entity = self.pickEntity()
+        result = self.collectTriples(self.entity)
+        self.entityTriples = [[row.get('uri') for row in rows] for rows in result]
         self.mode = mode
-        print('CHOSEN ENTITY: ', helpers.parseTriple(self.entity))
+        print('CHOSEN ENTITY: ', helpers.parseTriple(self.entity)[0])
         print('Number of entityTriples', len(self.entityTriples))
 
     def collectTriples(self, entity):

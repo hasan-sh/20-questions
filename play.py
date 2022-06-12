@@ -54,9 +54,10 @@ constants.URL = options.url
 
 
 print('Running the game..')
-if questioner in ['Entropy', 'ScoringAdvanced', 'ScoringBasic', 'ScoringSmartA', 'ScoringSmartB', 'ScoringEntropy']:
+if questioner in ['Entropy', 'ScoringAdvanced', 'ScoringBasic', 'ScoringSmartA', 'ScoringSmartB', 'ScoringEntropy', 'ScoringEntropy2']:
     game = Game(state=State(initializeState=False), questioner=questioner, againstHuman=againstHuman, devMode=dev)
 else:
     game = Game(state=State(), questioner=questioner, againstHuman=againstHuman, devMode=dev)
 winner = game.run()
+print(len(game.state.noHints))
 print("The winner ", winner)

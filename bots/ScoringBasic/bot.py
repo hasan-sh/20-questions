@@ -28,8 +28,6 @@ class ScoringBasicBot:
         highest = max(self.scoreIndex.values())
         indices = [i for i, j in enumerate(self.scoreIndex.values()) if j == highest]
         best = list(self.scoreIndex.keys())[random.choice(indices)]
-
-        # best = list(self.scoreIndex.keys())[list(self.scoreIndex.values()).index(highest)]
         return helpers.keyToQuestion(best, self.api)
 
     def updateScore(self, question = None, answer = None):
@@ -55,9 +53,6 @@ class ScoringBasicBot:
                     self.scoreIndex[res] += self.inforce if answer == 'yes' else -self.punish
                 except: pass
             
-            # print(self.scoreIndex['http://www.w3.org/2000/01/rdf-schema#label()()Taylor Swift'])
-            # print(list(self.scoreIndex.keys())[list(self.scoreIndex.values()).index(max(self.scoreIndex.values()))], max(self.scoreIndex.values()))
-
             # delete the entry of the asked question (to no ask it anymore)
             self.scoreIndex.pop( str(question[1]['uri'] + '()()' + question[2]['uri']) )
 
@@ -66,7 +61,3 @@ class ScoringBasicBot:
                 if res not in self.scoreIndex.keys():
                     self.scoreIndex[res] = 1 # else initialize
             ''' scoreIndex will contain the scores'''
-
-        # print(list(self.scoreIndex.keys())[list(self.scoreIndex.values()).index(max(self.scoreIndex.values()))], \
-        #     'which occurs for ', list(self.scoreIndex.values()).count(max(self.scoreIndex.values())))
-

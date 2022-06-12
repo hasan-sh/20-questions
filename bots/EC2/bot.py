@@ -3,8 +3,8 @@ import numpy as np
 from collections import Counter
 import random
 
-class ScoringEntropyBot:
-    _name = 'ScoringEntropy Bot'
+class EC2Bot:
+    _name = 'EC2 Bot'
 
     def __init__(self, state, split=0.5):
         self.api = state.api
@@ -17,22 +17,11 @@ class ScoringEntropyBot:
         self.inforce = +1
         self.punish = -1
         self.updateScore()
-        self.switch = False
         
     def nextQuestion(self):
-        # if not self.switch:
-        #     triple = helpers.rescursiveQuery(self.state, self.split, lastKnownAnswer = self.answer)
-        #     if triple:
-        #         self.history.append(triple)
-        #         return triple
-        #     else:
-        #         self.switch = True    
-        #         print('Now using scores')
-        #         return self.nextQuestion()
-        # else:
-            triple = self.bestQuestion()
-            self.history.append(triple)
-            return triple
+        triple = self.bestQuestion()
+        self.history.append(triple)
+        return triple
 
     def update(self, answer): 
         self.answer = answer
@@ -44,23 +33,6 @@ class ScoringEntropyBot:
         highest = max(self.scoreIndex.values())
         indices = [i for i, j in enumerate(self.scoreIndex.values()) if j == highest]
         best = list(self.scoreIndex.keys())[random.choice(indices)]
-
-        # best = list(self.scoreIndex.keys())[list(self.scoreIndex.values()).index(highest)]
-
-        # totalCount = sum(self.countIndex.values())
-        # best = min(self.countIndex, key=lambda x: abs(int(self.countIndex[x])) - int(totalCount) * self.split)
-
-
-        # best = min(self.countIndex, key=lambda x:  \
-        #    -( ( int(self.countIndex[x]) / int(totalCount) ) * np.log2( int(self.countIndex[x])/int(totalCount) ) + \
-        #         ( (int(totalCount)-int(self.countIndex[x])) / int(totalCount) ) * np.log2( (int(totalCount)-int(self.countIndex[x])) / int(totalCount) ) )\
-        #     )
-
-        # -( countYes/total * log(countYes/total) + countNo/total * log(countNo/total) )
-
-
-        # totalCount = sum(self.scoreIndex.values())
-        # best = min(self.scoreIndex, key=lambda x: abs(int(self.scoreIndex[x]) - int(totalCount) * self.split))
 
         return helpers.keyToQuestion(best, self.api)
 
@@ -87,9 +59,6 @@ class ScoringEntropyBot:
                     self.scoreIndex[res] += self.inforce if answer == 'yes' else self.punish
                 except: pass
 
-            # print(self.scoreIndex['http://www.w3.org/2000/01/rdf-schema#label()()Taylor Swift'])
-            # print(list(self.scoreIndex.keys())[list(self.scoreIndex.values()).index(max(self.scoreIndex.values()))], max(self.scoreIndex.values()))
-            
             #  delete the entry of the asked question (to no ask it anymore)
             self.scoreIndex.pop( str(question[1]['uri'] + '()()' + question[2]['uri']) )
             self.countIndex.pop( str(question[1]['uri'] + '()()' + question[2]['uri']) )
@@ -98,20 +67,11 @@ class ScoringEntropyBot:
             for res in results:
                 try: self.countIndex[res] += 1 # count
                 except: self.countIndex[res] = 1 # else initialize
-            ''' scoreIndex will contain the scores,
-                countIndex will store the (normalized) counts'''
+            ''' scoreIndex will contain the entropy scores,
+                countIndex will store the counts'''
 
-            # normalize the values in our index
-            
             totalCount = sum(self.countIndex.values())
-            # factor = 1.0/totalCount
-            # self.scoreIndex = {key:value*factor for key,value in self.countIndex.items()}
-            # self.scoreIndex = {key:abs(value - totalCount * self.split) for key,value in self.countIndex.items()}
-
             self.scoreIndex = {key:-( (value/totalCount) * np.log2( value/totalCount ) + \
                  ( (totalCount-value) / totalCount )  * np.log2(  (totalCount-value) / totalCount ) )\
              for key,value in self.countIndex.items()}
             
-        # print(list(self.scoreIndex.keys())[list(self.scoreIndex.values()).index(max(self.scoreIndex.values()))], \
-        #     'which occurs for ', list(self.scoreIndex.values()).count(max(self.scoreIndex.values())))
-

@@ -42,7 +42,7 @@ class Tournament:
         winners = np.array([])
         for i in range(self.repeat):
             print(f'\nPlaying game #{i+1}')
-            if self.botName in ['Entropy', 'ScoringBasic', 'ScoringAdvanced', 'ScoringEntropy', 'ScoringSmartA', 'ScoringSmartB']:
+            if self.botName in ['Entropy', 'ScoringBasic', 'ScoringAdvanced', 'ScoringEntropy', 'ScoringEntropy2', 'ScoringSmartA', 'ScoringSmartB']:
                 state = State(initializeState=False)
             else:
                 state = State()
@@ -82,7 +82,7 @@ class Tournament:
         Number of asked questions in the best game {round(bestGame)} out of {self.questionLimit} \n \
         The list of the games is {questionsAsked}")      
           
-        self.saveStats(toFile=True)
+        self.saveStats(toFile=False)
     # st.t.interval(alpha=0.95, df=len(questionsAsked)-1, loc=np.mean(questionsAsked), scale=st.sem(questionsAsked)) 
 
     def saveStats(self, toFile=False, short=True):

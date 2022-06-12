@@ -3,8 +3,8 @@ import numpy as np
 from collections import Counter
 import random
 
-class ScoringSmartBBot:
-    _name = 'ScoringSmartB Bot'
+class NormalizedABot:
+    _name = 'Normalized Bot'
 
     def __init__(self, state):
         self.api = state.api
@@ -12,10 +12,8 @@ class ScoringSmartBBot:
         self.countIndex = {}
         self.SSI = {} # SmartScoreIndex
         self.history = []
-        self.inforceRelated = 250
-        self.punishOthers = 0.5
-        self.punishRelated = 0.015
-        self.inforceOthers = 2
+        self.inforce = 1
+        self.punish = -1
         self.updateScore()
         
     def nextQuestion(self):
@@ -31,12 +29,13 @@ class ScoringSmartBBot:
         highest = max(self.SSI.values())
         indices = [i for i, j in enumerate(self.SSI.values()) if j == highest]
         best = list(self.SSI.keys())[random.choice(indices)]
-
-        # best = list(self.SSI.keys())[list(self.SSI.values()).index(highest)]
-
         return helpers.keyToQuestion(best, self.api)
 
     def updateScore(self, question = None, answer = None):
+        '''
+        Count and Score Index are created upon intilization. Score is initialized to be the normalized counts.
+        Count index is then not used anymore.
+        Score index is then updated each question with *100(yes) and *0.01(no) OR +1 and -1'''
         prefixes = '\n'.join(self.api.prefixes)
         query = f"""
             {prefixes}
@@ -54,18 +53,11 @@ class ScoringSmartBBot:
         results = [str(res[0]['uri'] + '()()' + res[1]['uri']) for res in qres]
         
         if answer:
-            indexCopy = self.SSI.keys()
             for res in results:
                 try:
-                    self.SSI[res] += self.inforceRelated if answer == 'yes' else -self.punishRelated
-                    indexCopy.remove(res)
+                    self.SSI[res] *= self.inforce if answer == 'yes' else self.punish
                 except: pass
-            for key in indexCopy: # for all other entries that have not yet been updated
-                self.SSI[ key ] *= self.punishOthers if answer == 'yes' else self.inforceOthers
             
-            # print(self.SSI['http://www.w3.org/2000/01/rdf-schema#label()()Taylor Swift'])
-            # print(list(self.SSI.keys())[list(self.SSI.values()).index(max(self.SSI.values()))], max(self.SSI.values()))
-
             #  delete the entry of the asked question (to no ask it anymore)
             self.SSI.pop( str(question[1]['uri'] + '()()' + question[2]['uri']) )
 
@@ -79,8 +71,3 @@ class ScoringSmartBBot:
             # normalize the values in our index
             factor = 1.0/sum(self.countIndex.values())
             self.SSI = {key:value*factor for key,value in self.countIndex.items()}
-
-        
-        # print(list(self.SSI.keys())[list(self.SSI.values()).index(max(self.SSI.values()))], \
-        #     'which occurs for ', list(self.SSI.values()).count(max(self.SSI.values())))
-
