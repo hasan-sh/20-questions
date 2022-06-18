@@ -135,13 +135,17 @@ class Answerer:
         query ="""
         SELECT distinct ?s
             WHERE {
-                ?s a ?_.
-                ?s <http://www.w3.org/2000/01/rdf-schema#label> ?__.
+                ?s <http://www.w3.org/2000/01/rdf-schema#label> ?o.
             }
         """
         g = self.api.queryKG(query)
         g = self.api.parseJSON(g, [['s']])
-        entity = random.choice(g) # this will need to be changed
+
+        if g:
+            entity = random.choice(g) # this will need to be changed
+        else:
+            entity = self.pickEntity()  
         return entity
+
 
         

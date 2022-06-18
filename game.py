@@ -13,7 +13,7 @@ class Game:
     """
     Runs a the game's while loop. The game terminates when the number of asked questions exceeds the QUESTIONS_LIMIT variable in constants.py
     """
-    def __init__(self, state=None, nQuestions=constants.QUESTIONS_LIMIT, questioner=None, observer=None, againstHuman = True, devMode = False, observerFlags = {}, corruptedKG = {}, observerStrategy = 'random', currentTournament = None, currentGame = None, observerAdvice = None): # TODO: load players dynamically.
+    def __init__(self, state=None, nQuestions=constants.QUESTIONS_LIMIT, questioner=None, observer=None, againstHuman = True, devMode = False, observerFlags = {}, corruptedKG = {}, observerStrategy = 'random', currentTournament = None, currentGame = None, observerAdvice = None, exponent = 1): # TODO: load players dynamically.
         self.nQuestions = nQuestions
         self.state = state
         # Players: [Questioner, Answerer]
@@ -34,8 +34,9 @@ class Game:
         self.devMode = devMode
         self.currentTournament = currentTournament
         self.currentGame = currentGame
+        self.exponent = exponent
         self.observerStrategy = observerStrategy
-        self.observer = helpers.load_bot("Observer")(self.state, self.corruptedKG, self.answerer, self.questioner, self.observerFlags, self.observerStrategy, self.currentTournament, self.currentGame)
+        self.observer = helpers.load_bot("Observer")(self.state, self.corruptedKG, self.answerer, self.questioner, self.observerFlags, self.observerStrategy, self.currentTournament, self.currentGame, self.exponent)
 
 
     # game loop
@@ -77,17 +78,17 @@ class Game:
                             else: 
                                 print('I lost!\n')
                                 print('******* START OF OBSERVER *******\n')
-                                self.observerFlags, self.observerAdvice = self.observer.observerDecider()
+                                self.observerFlags, self.observerAdvice, self.exponent = self.observer.observerDecider()
                                 return 0
                     else:
                         print('I lost!\n')
                         print('******* START OF OBSERVER *******\n')
-                        self.observerFlags, self.observerAdvice = self.observer.observerDecider()
+                        self.observerFlags, self.observerAdvice, self.exponent = self.observer.observerDecider()
                         return 0
                 else:
                     print('I lost, no more info!\n')
                     print('******* START OF OBSERVER *******\n')
-                    self.observerFlags, self.observerAdvice = self.observer.observerDecider()
+                    self.observerFlags, self.observerAdvice, self.exponent = self.observer.observerDecider()
                     return 0
 
             def askAnswerer(question):
@@ -112,7 +113,7 @@ class Game:
             askAnswerer(question)
         print('Questions limit reached, we lost! \nQuestions Asked:' + str(self.state.questionsAsked))
         print('******* START OF OBSERVER *******\n')
-        self.observerFlags, self.observerAdvice = self.observer.observerDecider()
+        self.observerFlags, self.observerAdvice, self.exponent = self.observer.observerDecider()
         return 0 # 0 indicates the bot has lost. 
         
 

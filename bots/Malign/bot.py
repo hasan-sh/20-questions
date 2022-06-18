@@ -20,6 +20,7 @@ class MalignBot:
         self.graphCopy = self.makeGraph()
         self.malignErrors = malignErrors
         self.currentTournament = currentTournament
+        self.localDF = pd.DataFrame({"Run":[], "Count":[]}) 
         # 'human' refers to the specific dataset under observation
         if human == 'True': 
             self.relations = self.collectRelationsH()
@@ -57,7 +58,7 @@ class MalignBot:
             viralObject = URIRef(np.random.choice(self.saveCorruptObject(falseRelation))) # takes random object from collection of predicates
             # print(viralObject)
             falseP = URIRef(falseRelation) # puts the predicate in the right format for comparison with triples in the graph
-            print(falseRelation)
+            # print(falseRelation)
             # Manipulates the graph for a full structural mistakes (all corresponding predicates are manipulated or manipulation is added)
             for triple in self.graphCopy:
                 if triple[1] == falseP:
@@ -79,8 +80,15 @@ class MalignBot:
                 # print("new:", new, "\n")
                 self.malignErrors = self.malignErrors.append({"Run":currentTournament, "Old Triple":old, "New Triple":new, "Count":count}, ignore_index=True)
                 count += 1
+        # For local df
+        localCount = self.malignErrors['Count'].iat[-1]
+        self.localDF = self.localDF.append({"Run":currentTournament, "Count":localCount}, ignore_index=True)
+        self.localDF.to_csv("localDF_Save.csv", mode = 'a', header = False, index = False)
+
+        # For global df
+
         print("DF:", self.malignErrors)
-        # self.malignErrors.to_csv("malignErrors_Save.csv", mode = 'a', header = False, index = False)
+        self.malignErrors.to_csv("malignErrors_Save.csv", mode = 'a', header = False, index = False)
         return self.graphCopy
 
 
@@ -92,12 +100,15 @@ class MalignBot:
         + adds false triples (overlapping) to 10% of the subjects
         """
 
-        PToCorrupt = random.randint(1, 5)
-        SToCorrupt = random.randint(25, 125)
-        eSToCorrupt = len(self.subjects) // 10
+        PToCorrupt = random.randint(1, 5)       # generates integer for the number predicates
+        SToCorrupt = random.randint(100, 500)   # generates integer for the number of subjects
+        eSToCorrupt = len(self.subjects) // 10  # generates integer for the number of extra subjects
 
-        predicatesToCorrupt = random.choices(self.relations, k=PToCorrupt)
-        CSubCandidates = self.overlappingSubjects(predicatesToCorrupt)
+        CSubCandidates = []
+        while not CSubCandidates:
+            predicatesToCorrupt = random.choices(self.relations, k=PToCorrupt)  # takes a number of predicates equivalent to the number above
+            CSubCandidates = self.overlappingSubjects(predicatesToCorrupt)      
+
         subjectsToCorrupt = random.choices(CSubCandidates, k=SToCorrupt)
         count = 0
         corruptPredicates = []
@@ -127,7 +138,7 @@ class MalignBot:
         
         eSubjectsToCorrupt = random.sample(self.subjects, eSToCorrupt)
         for falseP in corruptPredicates:
-            for i in ESubjectsToCorrupt:
+            for i in eSubjectsToCorrupt:
                 subject = URIRef(i)
                 old = None
                 # print("old:", old)
@@ -136,9 +147,16 @@ class MalignBot:
                 # print("new:", new, "\n")
                 self.malignErrors = self.malignErrors.append({"Run":currentTournament, "Old Triple":old, "New Triple":new, "Count":count}, ignore_index=True)
                 count += 1
+        
+        # For local df
+        localCount = self.malignErrors['Count'].iat[-1]
+        self.localDF = self.localDF.append({"Run":currentTournament, "Count":localCount}, ignore_index=True)
+        self.localDF.to_csv("localDF_Save.csv", mode = 'a', header = False, index = False)
+
         print("DF:", self.malignErrors)
-        # self.malignErrors.to_csv("malignErrors_Save.csv", mode = 'a', header = False, index = False)
+        self.malignErrors.to_csv("malignErrors_Save.csv", mode = 'a', header = False, index = False)
         return self.graphCopy
+
 
     def malignSwap(self, currentTournament): # corresponds to malignType3
         """
@@ -148,7 +166,7 @@ class MalignBot:
         Plus extra swapped object (with respective predicates) are added to a set of random subject (less than the ones who are swapped)
         """
         PToCorrupt = random.randint(1, 5)
-        SToCorrupt = random.randint(100, 150)
+        SToCorrupt = random.randint(100, 300)
         eToCorrupt = random.randint(1, SToCorrupt)
 
         eSubjectsToCorrupt = random.sample(self.subjects, eToCorrupt)
@@ -162,13 +180,15 @@ class MalignBot:
                 predicatesToCorrupt = random.choices(self.relations, k=PToCorrupt) # takes 1-5 random predicates from all triples
                 CSubCandidates = self.overlappingSubjects(predicatesToCorrupt) # generates subjects that have those predicates
                 subjectsToCorrupt = random.choices(CSubCandidates, k=SToCorrupt) # takes random sample from the above generated subjects
-                print(len(subjectsToCorrupt))
+                # print(len(subjectsToCorrupt))
             except:
                 print("Exception occured\n")
 
+        
         for i in range(0, len(subjectsToCorrupt)-2+1, 2):
             pair = subjectsToCorrupt[i:i+2]
             for predicate in predicatesToCorrupt:
+
                 old1 = pair[0], predicate, self.generatePairObject(pair[0], predicate)
                 old2 = pair[1], predicate, self.generatePairObject(pair[1], predicate)
 
@@ -178,9 +198,9 @@ class MalignBot:
                 self.graphCopy.set((URIRef(new1[0]), URIRef(new1[1]),URIRef(new1[2])))
                 self.graphCopy.set((URIRef(new2[0]), URIRef(new2[1]),URIRef(new2[2])))
 
-                self.malignErrors = self.malignErrors.append({"Run":currentTournament, "Old Triple":old1, "New Triple":new1, "Count":count}, ignore_index=True)
+                # self.malignErrors = self.malignErrors.append({"Run":currentTournament, "Old Triple":old1, "New Triple":new1, "Count":count}, ignore_index=True)
                 count+=1
-                self.malignErrors = self.malignErrors.append({"Run":currentTournament, "Old Triple":old2, "New Triple":new2, "Count":count}, ignore_index=True)
+                # self.malignErrors = self.malignErrors.append({"Run":currentTournament, "Old Triple":old2, "New Triple":new2, "Count":count}, ignore_index=True)
                 count+=1
 
                 try: 
@@ -193,12 +213,17 @@ class MalignBot:
 
                     self.graphCopy.add((URIRef(extra1[0]), URIRef(extra1[1]),URIRef(extra1[2])))
 
-                    self.malignErrors = self.malignErrors.append({"Run":currentTournament, "Old Triple":None, "New Triple":extra1, "Count":count}, ignore_index=True)
+                    # self.malignErrors = self.malignErrors.append({"Run":currentTournament, "Old Triple":None, "New Triple":extra1, "Count":count}, ignore_index=True)
                     count+=1
                 except:
                     pass
 
-        print("DF:", self.malignErrors)
+        # For local df
+        # localCount = self.malignErrors['Count'].iat[-1]
+        self.localDF = self.localDF.append({"Run":currentTournament, "Count":count}, ignore_index=True)
+        self.localDF.to_csv("localDF_Save.csv", mode = 'a', header = False, index = False)
+
+        # print("DF:", self.malignErrors)
         # self.malignErrors.to_csv("malignErrors_Save.csv", mode = 'a', header = False, index = False)
         return self.graphCopy
 

@@ -52,7 +52,7 @@ class TournamentMalign:
         self.malignErrors = pd.DataFrame({"Run":[], "Old Triple":[], "New Triple":[], "Count":[]}) 
         self.observerFlags = pd.DataFrame({"Run":[], "Type":[], "Triple":[], "Count":[], "Comparison":[], "Subjects":[], "Predicates":[], "Objects":[]})
         # CKG
-        self.currentTournament = 0
+        self.currentTournament = 58
         self.stateMalign = State() 
         # self.malignBot = helpers.load_bot("Malign")(self.stateMalign, self.currentTournament, self.malignErrors, human = human, malignType = malignType)
         # self.corruptedKG = self.malignBot.corruptedKG
@@ -68,7 +68,7 @@ class TournamentMalign:
         """
         while self.currentTournament < self.tournamentCount: 
             print("\n\n##########################################################################")
-            print("###################################", self.currentTournament+1, "####################################")
+            print("###################################", self.currentTournament, "####################################")
             print("##########################################################################\n\n")
 
             questionsAsked = np.array([])
@@ -76,6 +76,7 @@ class TournamentMalign:
             malignBot = helpers.load_bot("Malign")(self.stateMalign, self.currentTournament, self.malignErrors, human = human, malignType = malignType)
             corruptedKG = malignBot.corruptedKG
             observerAdvice = None
+            exponent = 1
 
             for currentGame in range(self.repeat):
                 print(f'\n\nPlaying game #{currentGame+1}')
@@ -94,11 +95,15 @@ class TournamentMalign:
                     self.stateMalign.questionsAsked = 0
                     state = self.stateMalign
                 # game = Game(state=state, nQuestions=self.questionLimit, questioner=self.botName, againstHuman = False, observerFlags = self.observerFlags, corruptedKG = self.corruptedKG, observerStrategy = self.observerStrategy, currentTournament = self.currentTournament, currentGame = currentGame)
-                game = Game(state=state, nQuestions=self.questionLimit, questioner=self.botName, againstHuman = False, observerFlags = self.observerFlags, corruptedKG = corruptedKG, observerStrategy = self.observerStrategy, currentTournament = self.currentTournament, currentGame = currentGame, observerAdvice = observerAdvice)
+                game = Game(state=state, nQuestions=self.questionLimit, questioner=self.botName, againstHuman = False, observerFlags = self.observerFlags, corruptedKG = corruptedKG, observerStrategy = self.observerStrategy, currentTournament = self.currentTournament, currentGame = currentGame, observerAdvice = observerAdvice, exponent = exponent)
 
                 winner = game.run()
                 self.observerFlags = game.observerFlags
                 observerAdvice = game.observerAdvice
+                if exponent < game.exponent:
+                    exponent = game.exponent
+                else:
+                    exponent = 1
 
                 winners = np.append(winners, [winner])
                 questionsAsked = np.append(questionsAsked, [state.questionsAsked])
@@ -129,7 +134,6 @@ class TournamentMalign:
             self.observerFlags.to_csv("observerFlags_Save.csv", mode = 'a', header = False, index = False)
             self.observerFlags = pd.DataFrame({"Run":[], "Type":[], "Triple":[], "Count":[], "Comparison":[], "Subjects":[], "Predicates":[], "Objects":[]})
             self.currentTournament += 1
-        print(self.observerFlags)
         print("\nFinished!")
             
 
