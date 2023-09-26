@@ -21,7 +21,7 @@ This file (`tournament.py`) is used to start the game. It can be executed throug
 ### Arguments:
 
 - `-r` : Specifies the number of repetitions.
-- `-p` : Specifies which bot to play against. The options are "Entropy", "Base", or "Random".
+- `-p` : Specifies which bot to play against. The options are "Entropy", "Base", or "Random". More bots are available in different branches. 
 - `-url` : Specifies the URL of the dataset to use. This dataset should be running on a local server.
 
 ## Prerequisites
