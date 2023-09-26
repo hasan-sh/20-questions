@@ -9,7 +9,7 @@ This file (`play.py`) is used to start the game. It can be executed through the 
 
 ### Arguments:
 
-- `-q` : Specifies which bot to play against. The options are "Entropy", "Base", or "Random".
+- `-q` : Specifies which bot to play against. The options are "Entropy", "Base", or "Random". More bots are available in different branches. 
 - `-o` : Specifies if the opponent is a human or not. The options are "True" or "False".
 - `-d` : Sets the development mode. When in development mode, questions and answers are printed.
 - `-url` : Specifies the URL of the dataset to use. This dataset should be running on a local server.
